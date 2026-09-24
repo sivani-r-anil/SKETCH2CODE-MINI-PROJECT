@@ -1,0 +1,1155 @@
+{
+  "detections": [
+    {
+      "class": "Button",
+      "confidence": 0.961,
+      "x1": 624.0,
+      "y1": 873.7,
+      "x2": 819.0,
+      "y2": 931.8
+    },
+    {
+      "class": "Button",
+      "confidence": 0.958,
+      "x1": 414.9,
+      "y1": 872.6,
+      "x2": 610.2,
+      "y2": 930.5
+    },
+    {
+      "class": "Button",
+      "confidence": 0.934,
+      "x1": 205.2,
+      "y1": 873.6,
+      "x2": 400.6,
+      "y2": 931.9
+    },
+    {
+      "class": "Button",
+      "confidence": 0.929,
+      "x1": 1032.7,
+      "y1": 268.6,
+      "x2": 1311.3,
+      "y2": 481.2
+    },
+    {
+      "class": "Button",
+      "confidence": 0.901,
+      "x1": 1240.0,
+      "y1": 28.1,
+      "x2": 1422.9,
+      "y2": 110.1
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.759,
+      "x1": 291.1,
+      "y1": 414.6,
+      "x2": 816.8,
+      "y2": 475.2
+    },
+    {
+      "class": "Select",
+      "confidence": 0.657,
+      "x1": 198.6,
+      "y1": 513.9,
+      "x2": 815.3,
+      "y2": 579.2
+    },
+    {
+      "class": "Button",
+      "confidence": 0.597,
+      "x1": 730.4,
+      "y1": 8.6,
+      "x2": 1444.7,
+      "y2": 137.5
+    },
+    {
+      "class": "Button",
+      "confidence": 0.59,
+      "x1": 1048.9,
+      "y1": 339.8,
+      "x2": 1194.6,
+      "y2": 486.4
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.56,
+      "x1": 315.7,
+      "y1": 619.9,
+      "x2": 821.3,
+      "y2": 678.2
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.516,
+      "x1": 329.4,
+      "y1": 309.3,
+      "x2": 817.3,
+      "y2": 373.4
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.374,
+      "x1": 314.4,
+      "y1": 517.8,
+      "x2": 820.7,
+      "y2": 577.8
+    },
+    {
+      "class": "Select",
+      "confidence": 0.342,
+      "x1": 199.0,
+      "y1": 409.2,
+      "x2": 816.8,
+      "y2": 476.4
+    },
+    {
+      "class": "Select",
+      "confidence": 0.155,
+      "x1": 199.9,
+      "y1": 620.1,
+      "x2": 816.7,
+      "y2": 680.1
+    }
+  ],
+  "ocr_texts": [
+    {
+      "text": "SketchHub",
+      "confidence": 0.996,
+      "box": [
+        [
+          126,
+          46
+        ],
+        [
+          370,
+          46
+        ],
+        [
+          370,
+          102
+        ],
+        [
+          126,
+          102
+        ]
+      ]
+    },
+    {
+      "text": "Home",
+      "confidence": 0.999,
+      "box": [
+        [
+          864,
+          60
+        ],
+        [
+          928,
+          60
+        ],
+        [
+          928,
+          88
+        ],
+        [
+          864,
+          88
+        ]
+      ]
+    },
+    {
+      "text": "Features",
+      "confidence": 1.0,
+      "box": [
+        [
+          968,
+          58
+        ],
+        [
+          1070,
+          58
+        ],
+        [
+          1070,
+          90
+        ],
+        [
+          968,
+          90
+        ]
+      ]
+    },
+    {
+      "text": "Pricing",
+      "confidence": 0.997,
+      "box": [
+        [
+          1106,
+          54
+        ],
+        [
+          1195,
+          54
+        ],
+        [
+          1195,
+          98
+        ],
+        [
+          1106,
+          98
+        ]
+      ]
+    },
+    {
+      "text": "Sign Up",
+      "confidence": 0.858,
+      "box": [
+        [
+          1275,
+          59
+        ],
+        [
+          1371,
+          59
+        ],
+        [
+          1371,
+          95
+        ],
+        [
+          1275,
+          95
+        ]
+      ]
+    },
+    {
+      "text": "Create Your Account",
+      "confidence": 0.999,
+      "box": [
+        [
+          199,
+          156
+        ],
+        [
+          725,
+          156
+        ],
+        [
+          725,
+          222
+        ],
+        [
+          199,
+          222
+        ]
+      ]
+    },
+    {
+      "text": "Join SketchHub and start building amazing designs",
+      "confidence": 0.848,
+      "box": [
+        [
+          205,
+          219
+        ],
+        [
+          821,
+          219
+        ],
+        [
+          821,
+          263
+        ],
+        [
+          205,
+          263
+        ]
+      ]
+    },
+    {
+      "text": "Full Name",
+      "confidence": 0.709,
+      "box": [
+        [
+          206,
+          286
+        ],
+        [
+          310,
+          286
+        ],
+        [
+          310,
+          312
+        ],
+        [
+          206,
+          312
+        ]
+      ]
+    },
+    {
+      "text": "John Doe",
+      "confidence": 0.992,
+      "box": [
+        [
+          224,
+          330
+        ],
+        [
+          318,
+          330
+        ],
+        [
+          318,
+          354
+        ],
+        [
+          224,
+          354
+        ]
+      ]
+    },
+    {
+      "text": "Email Address",
+      "confidence": 0.709,
+      "box": [
+        [
+          208,
+          388
+        ],
+        [
+          354,
+          388
+        ],
+        [
+          354,
+          416
+        ],
+        [
+          208,
+          416
+        ]
+      ]
+    },
+    {
+      "text": "john@example.com",
+      "confidence": 0.824,
+      "box": [
+        [
+          219,
+          430
+        ],
+        [
+          414,
+          430
+        ],
+        [
+          414,
+          462
+        ],
+        [
+          219,
+          462
+        ]
+      ]
+    },
+    {
+      "text": "Password",
+      "confidence": 0.981,
+      "box": [
+        [
+          206,
+          490
+        ],
+        [
+          304,
+          490
+        ],
+        [
+          304,
+          518
+        ],
+        [
+          206,
+          518
+        ]
+      ]
+    },
+    {
+      "text": "At least 8 characters",
+      "confidence": 0.94,
+      "box": [
+        [
+          224,
+          534
+        ],
+        [
+          434,
+          534
+        ],
+        [
+          434,
+          560
+        ],
+        [
+          224,
+          560
+        ]
+      ]
+    },
+    {
+      "text": "Design Faster",
+      "confidence": 1.0,
+      "box": [
+        [
+          984,
+          523
+        ],
+        [
+          1255,
+          523
+        ],
+        [
+          1255,
+          589
+        ],
+        [
+          984,
+          589
+        ]
+      ]
+    },
+    {
+      "text": "Confirm Password",
+      "confidence": 0.991,
+      "box": [
+        [
+          206,
+          594
+        ],
+        [
+          388,
+          594
+        ],
+        [
+          388,
+          620
+        ],
+        [
+          206,
+          620
+        ]
+      ]
+    },
+    {
+      "text": "to use",
+      "confidence": 1.0,
+      "box": [
+        [
+          1116,
+          610
+        ],
+        [
+          1192,
+          610
+        ],
+        [
+          1192,
+          640
+        ],
+        [
+          1116,
+          640
+        ]
+      ]
+    },
+    {
+      "text": "Re-enter your password",
+      "confidence": 0.94,
+      "box": [
+        [
+          224,
+          636
+        ],
+        [
+          464,
+          636
+        ],
+        [
+          464,
+          668
+        ],
+        [
+          224,
+          668
+        ]
+      ]
+    },
+    {
+      "text": "Beautiful templates",
+      "confidence": 0.802,
+      "box": [
+        [
+          1057,
+          673
+        ],
+        [
+          1289,
+          673
+        ],
+        [
+          1289,
+          711
+        ],
+        [
+          1057,
+          711
+        ]
+      ]
+    },
+    {
+      "text": "agree to the Terms of Service and",
+      "confidence": 0.928,
+      "box": [
+        [
+          270,
+          700
+        ],
+        [
+          592,
+          700
+        ],
+        [
+          592,
+          732
+        ],
+        [
+          270,
+          732
+        ]
+      ]
+    },
+    {
+      "text": "Collaborate with your team",
+      "confidence": 0.969,
+      "box": [
+        [
+          1055,
+          739
+        ],
+        [
+          1373,
+          739
+        ],
+        [
+          1373,
+          779
+        ],
+        [
+          1055,
+          779
+        ]
+      ]
+    },
+    {
+      "text": "Create Account",
+      "confidence": 0.994,
+      "box": [
+        [
+          400,
+          768
+        ],
+        [
+          620,
+          768
+        ],
+        [
+          620,
+          800
+        ],
+        [
+          400,
+          800
+        ]
+      ]
+    },
+    {
+      "text": "sign uP with",
+      "confidence": 0.564,
+      "box": [
+        [
+          460,
+          836
+        ],
+        [
+          582,
+          836
+        ],
+        [
+          582,
+          866
+        ],
+        [
+          460,
+          866
+        ]
+      ]
+    },
+    {
+      "text": "Google",
+      "confidence": 0.807,
+      "box": [
+        [
+          286,
+          886
+        ],
+        [
+          365,
+          886
+        ],
+        [
+          365,
+          924
+        ],
+        [
+          286,
+          924
+        ]
+      ]
+    },
+    {
+      "text": "GitHub",
+      "confidence": 0.937,
+      "box": [
+        [
+          498,
+          888
+        ],
+        [
+          574,
+          888
+        ],
+        [
+          574,
+          914
+        ],
+        [
+          498,
+          914
+        ]
+      ]
+    },
+    {
+      "text": "Microsoft",
+      "confidence": 0.837,
+      "box": [
+        [
+          693,
+          888
+        ],
+        [
+          791,
+          888
+        ],
+        [
+          791,
+          916
+        ],
+        [
+          693,
+          916
+        ]
+      ]
+    },
+    {
+      "text": "Already have an account? Log_in",
+      "confidence": 0.743,
+      "box": [
+        [
+          344,
+          944
+        ],
+        [
+          677,
+          944
+        ],
+        [
+          677,
+          982
+        ],
+        [
+          344,
+          982
+        ]
+      ]
+    },
+    {
+      "text": "Easy",
+      "confidence": 1.0,
+      "box": [
+        [
+          1058,
+          604
+        ],
+        [
+          1119,
+          612
+        ],
+        [
+          1113,
+          648
+        ],
+        [
+          1052,
+          640
+        ]
+      ]
+    },
+    {
+      "text": "Privacy",
+      "confidence": 0.99,
+      "box": [
+        [
+          595,
+          697
+        ],
+        [
+          666,
+          706
+        ],
+        [
+          663,
+          731
+        ],
+        [
+          591,
+          722
+        ]
+      ]
+    },
+    {
+      "text": "Policy",
+      "confidence": 0.757,
+      "box": [
+        [
+          667,
+          696
+        ],
+        [
+          726,
+          706
+        ],
+        [
+          720,
+          731
+        ],
+        [
+          662,
+          721
+        ]
+      ]
+    }
+  ],
+  "mapped_components": [
+    {
+      "class": "Button",
+      "confidence": 0.961,
+      "x1": 624.0,
+      "y1": 873.7,
+      "x2": 819.0,
+      "y2": 931.8,
+      "texts": [
+        "Microsoft"
+      ]
+    },
+    {
+      "class": "Button",
+      "confidence": 0.958,
+      "x1": 414.9,
+      "y1": 872.6,
+      "x2": 610.2,
+      "y2": 930.5,
+      "texts": [
+        "GitHub"
+      ]
+    },
+    {
+      "class": "Button",
+      "confidence": 0.934,
+      "x1": 205.2,
+      "y1": 873.6,
+      "x2": 400.6,
+      "y2": 931.9,
+      "texts": [
+        "Google"
+      ]
+    },
+    {
+      "class": "Button",
+      "confidence": 0.929,
+      "x1": 1032.7,
+      "y1": 268.6,
+      "x2": 1311.3,
+      "y2": 481.2,
+      "texts": []
+    },
+    {
+      "class": "Button",
+      "confidence": 0.901,
+      "x1": 1240.0,
+      "y1": 28.1,
+      "x2": 1422.9,
+      "y2": 110.1,
+      "texts": [
+        "Sign Up"
+      ]
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.759,
+      "x1": 291.1,
+      "y1": 414.6,
+      "x2": 816.8,
+      "y2": 475.2,
+      "texts": [
+        "john@example.com"
+      ]
+    },
+    {
+      "class": "Select",
+      "confidence": 0.657,
+      "x1": 198.6,
+      "y1": 513.9,
+      "x2": 815.3,
+      "y2": 579.2,
+      "texts": [
+        "At least 8 characters"
+      ]
+    },
+    {
+      "class": "Button",
+      "confidence": 0.597,
+      "x1": 730.4,
+      "y1": 8.6,
+      "x2": 1444.7,
+      "y2": 137.5,
+      "texts": [
+        "Home",
+        "Features",
+        "Pricing"
+      ]
+    },
+    {
+      "class": "Button",
+      "confidence": 0.59,
+      "x1": 1048.9,
+      "y1": 339.8,
+      "x2": 1194.6,
+      "y2": 486.4,
+      "texts": []
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.56,
+      "x1": 315.7,
+      "y1": 619.9,
+      "x2": 821.3,
+      "y2": 678.2,
+      "texts": [
+        "Re-enter your password"
+      ]
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.516,
+      "x1": 329.4,
+      "y1": 309.3,
+      "x2": 817.3,
+      "y2": 373.4,
+      "texts": []
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.374,
+      "x1": 314.4,
+      "y1": 517.8,
+      "x2": 820.7,
+      "y2": 577.8,
+      "texts": []
+    },
+    {
+      "class": "Select",
+      "confidence": 0.342,
+      "x1": 199.0,
+      "y1": 409.2,
+      "x2": 816.8,
+      "y2": 476.4,
+      "texts": []
+    },
+    {
+      "class": "Select",
+      "confidence": 0.155,
+      "x1": 199.9,
+      "y1": 620.1,
+      "x2": 816.7,
+      "y2": 680.1,
+      "texts": []
+    }
+  ],
+  "layout": {
+    "mode": "multi",
+    "page": {
+      "width": 1246.1,
+      "height": 923.3
+    },
+    "rows": [],
+    "left": [
+      {
+        "row": 1,
+        "components": [
+          {
+            "class": "Textbox",
+            "confidence": 0.516,
+            "x1": 329.4,
+            "y1": 309.3,
+            "x2": 817.3,
+            "y2": 373.4,
+            "texts": [],
+            "center_y": 341.35,
+            "center_x": 573.3499999999999,
+            "pixel_width": 487.9,
+            "pixel_height": 64.09999999999997
+          }
+        ]
+      },
+      {
+        "row": 2,
+        "components": [
+          {
+            "class": "Select",
+            "confidence": 0.342,
+            "x1": 199.0,
+            "y1": 409.2,
+            "x2": 816.8,
+            "y2": 476.4,
+            "texts": [],
+            "center_y": 442.79999999999995,
+            "center_x": 507.9,
+            "pixel_width": 617.8,
+            "pixel_height": 67.19999999999999
+          },
+          {
+            "class": "Textbox",
+            "confidence": 0.759,
+            "x1": 291.1,
+            "y1": 414.6,
+            "x2": 816.8,
+            "y2": 475.2,
+            "texts": [
+              "john@example.com"
+            ],
+            "center_y": 444.9,
+            "center_x": 553.95,
+            "pixel_width": 525.6999999999999,
+            "pixel_height": 60.599999999999966
+          }
+        ]
+      },
+      {
+        "row": 3,
+        "components": [
+          {
+            "class": "Select",
+            "confidence": 0.657,
+            "x1": 198.6,
+            "y1": 513.9,
+            "x2": 815.3,
+            "y2": 579.2,
+            "texts": [
+              "At least 8 characters"
+            ],
+            "center_y": 546.55,
+            "center_x": 506.95,
+            "pixel_width": 616.6999999999999,
+            "pixel_height": 65.30000000000007
+          },
+          {
+            "class": "Textbox",
+            "confidence": 0.374,
+            "x1": 314.4,
+            "y1": 517.8,
+            "x2": 820.7,
+            "y2": 577.8,
+            "texts": [],
+            "center_y": 547.8,
+            "center_x": 567.55,
+            "pixel_width": 506.30000000000007,
+            "pixel_height": 60.0
+          }
+        ]
+      },
+      {
+        "row": 4,
+        "components": [
+          {
+            "class": "Select",
+            "confidence": 0.155,
+            "x1": 199.9,
+            "y1": 620.1,
+            "x2": 816.7,
+            "y2": 680.1,
+            "texts": [],
+            "center_y": 650.1,
+            "center_x": 508.3,
+            "pixel_width": 616.8000000000001,
+            "pixel_height": 60.0
+          },
+          {
+            "class": "Textbox",
+            "confidence": 0.56,
+            "x1": 315.7,
+            "y1": 619.9,
+            "x2": 821.3,
+            "y2": 678.2,
+            "texts": [
+              "Re-enter your password"
+            ],
+            "center_y": 649.05,
+            "center_x": 568.5,
+            "pixel_width": 505.59999999999997,
+            "pixel_height": 58.30000000000007
+          }
+        ]
+      },
+      {
+        "row": 5,
+        "components": [
+          {
+            "class": "Button",
+            "confidence": 0.934,
+            "x1": 205.2,
+            "y1": 873.6,
+            "x2": 400.6,
+            "y2": 931.9,
+            "texts": [
+              "Google"
+            ],
+            "center_y": 902.75,
+            "center_x": 302.9,
+            "pixel_width": 195.40000000000003,
+            "pixel_height": 58.299999999999955
+          },
+          {
+            "class": "Button",
+            "confidence": 0.958,
+            "x1": 414.9,
+            "y1": 872.6,
+            "x2": 610.2,
+            "y2": 930.5,
+            "texts": [
+              "GitHub"
+            ],
+            "center_y": 901.55,
+            "center_x": 512.55,
+            "pixel_width": 195.30000000000007,
+            "pixel_height": 57.89999999999998
+          },
+          {
+            "class": "Button",
+            "confidence": 0.961,
+            "x1": 624.0,
+            "y1": 873.7,
+            "x2": 819.0,
+            "y2": 931.8,
+            "texts": [
+              "Microsoft"
+            ],
+            "center_y": 902.75,
+            "center_x": 721.5,
+            "pixel_width": 195.0,
+            "pixel_height": 58.09999999999991
+          }
+        ]
+      }
+    ],
+    "right": [
+      {
+        "row": 1,
+        "components": [
+          {
+            "class": "Button",
+            "confidence": 0.597,
+            "x1": 730.4,
+            "y1": 8.6,
+            "x2": 1444.7,
+            "y2": 137.5,
+            "texts": [
+              "Home",
+              "Features",
+              "Pricing"
+            ],
+            "center_y": 73.05,
+            "center_x": 1087.55,
+            "pixel_width": 714.3000000000001,
+            "pixel_height": 128.9
+          },
+          {
+            "class": "Button",
+            "confidence": 0.901,
+            "x1": 1240.0,
+            "y1": 28.1,
+            "x2": 1422.9,
+            "y2": 110.1,
+            "texts": [
+              "Sign Up"
+            ],
+            "center_y": 69.1,
+            "center_x": 1331.45,
+            "pixel_width": 182.9000000000001,
+            "pixel_height": 82.0
+          }
+        ]
+      },
+      {
+        "row": 2,
+        "components": [
+          {
+            "class": "Button",
+            "confidence": 0.929,
+            "x1": 1032.7,
+            "y1": 268.6,
+            "x2": 1311.3,
+            "y2": 481.2,
+            "texts": [],
+            "center_y": 374.9,
+            "center_x": 1172.0,
+            "pixel_width": 278.5999999999999,
+            "pixel_height": 212.59999999999997
+          }
+        ]
+      },
+      {
+        "row": 3,
+        "components": [
+          {
+            "class": "Button",
+            "confidence": 0.59,
+            "x1": 1048.9,
+            "y1": 339.8,
+            "x2": 1194.6,
+            "y2": 486.4,
+            "texts": [],
+            "center_y": 413.1,
+            "center_x": 1121.75,
+            "pixel_width": 145.69999999999982,
+            "pixel_height": 146.59999999999997
+          }
+        ]
+      }
+    ]
+  },
+  "generated_code": "function GeneratedPage() {\n  return (\n    <div className=\"min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6\">\n      <div className=\"w-full max-w-5xl bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-start\">\n        <div className=\"flex flex-col\">\n        <div className=\"w-full mb-4\">\n          <input type=\"text\" placeholder=\"Enter text...\" className=\"w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm\" />\n        </div>\n        <div className=\"flex flex-wrap items-center justify-between gap-3 w-full mb-4\">\n          <div className=\"flex-1 min-w-[120px]\">\n            <div className=\"text-gray-700 text-center\">Select</div>\n          </div>\n          <div className=\"flex-1 min-w-[120px]\">\n            <input type=\"text\" placeholder=\"john@example.com\" className=\"w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm\" />\n          </div>\n        </div>\n        <div className=\"flex flex-wrap items-center justify-between gap-3 w-full mb-4\">\n          <div className=\"flex-1 min-w-[120px]\">\n            <div className=\"text-gray-700 text-center\">At least 8 characters</div>\n          </div>\n          <div className=\"flex-1 min-w-[120px]\">\n            <input type=\"text\" placeholder=\"Enter text...\" className=\"w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm\" />\n          </div>\n        </div>\n        <div className=\"flex flex-wrap items-center justify-between gap-3 w-full mb-4\">\n          <div className=\"flex-1 min-w-[120px]\">\n            <div className=\"text-gray-700 text-center\">Select</div>\n          </div>\n          <div className=\"flex-1 min-w-[120px]\">\n            <input type=\"password\" placeholder=\"Re-enter your password\" className=\"w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm\" />\n          </div>\n        </div>\n        <div className=\"flex flex-wrap items-center justify-between gap-3 w-full mb-4\">\n          <div className=\"flex-1 min-w-[120px]\">\n            <button className=\"w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow transition-colors text-center\">Google</button>\n          </div>\n          <div className=\"flex-1 min-w-[120px]\">\n            <button className=\"w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow transition-colors text-center\">GitHub</button>\n          </div>\n          <div className=\"flex-1 min-w-[120px]\">\n            <button className=\"w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow transition-colors text-center\">Microsoft</button>\n          </div>\n        </div>\n        </div>\n        <div className=\"flex flex-col\">\n        <div className=\"flex flex-wrap items-center justify-between gap-3 w-full mb-4\">\n          <div className=\"flex-1 min-w-[120px]\">\n            <button className=\"w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow transition-colors text-center\">Home Features Pricing</button>\n          </div>\n          <div className=\"flex-1 min-w-[120px]\">\n            <button className=\"w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow transition-colors text-center\">Sign Up</button>\n          </div>\n        </div>\n        <div className=\"w-full mb-4\">\n          <button className=\"w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow transition-colors text-center\">Button</button>\n        </div>\n        <div className=\"w-full mb-4\">\n          <button className=\"w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow transition-colors text-center\">Button</button>\n        </div>\n        </div>\n      </div>\n    </div>\n  );\n}\n\nexport default GeneratedPage;"
+}

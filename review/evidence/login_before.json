@@ -1,0 +1,576 @@
+{
+  "detections": [
+    {
+      "class": "Check Box",
+      "confidence": 0.794,
+      "x1": 110.9,
+      "y1": 595.8,
+      "x2": 330.9,
+      "y2": 663.2
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.769,
+      "x1": 48.3,
+      "y1": 327.9,
+      "x2": 388.6,
+      "y2": 389.9
+    },
+    {
+      "class": "Label",
+      "confidence": 0.691,
+      "x1": 141.7,
+      "y1": 714.7,
+      "x2": 283.6,
+      "y2": 742.1
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.332,
+      "x1": 76.7,
+      "y1": 451.7,
+      "x2": 399.2,
+      "y2": 512.2
+    },
+    {
+      "class": "Label",
+      "confidence": 0.213,
+      "x1": 39.6,
+      "y1": 289.4,
+      "x2": 110.4,
+      "y2": 320.1
+    },
+    {
+      "class": "Check Box",
+      "confidence": 0.212,
+      "x1": 52.7,
+      "y1": 525.1,
+      "x2": 176.1,
+      "y2": 554.9
+    },
+    {
+      "class": "Radio Button",
+      "confidence": 0.181,
+      "x1": 139.2,
+      "y1": 173.6,
+      "x2": 290.9,
+      "y2": 229.7
+    }
+  ],
+  "ocr_texts": [
+    {
+      "text": "LOGIN",
+      "confidence": 0.99,
+      "box": [
+        [
+          135,
+          177
+        ],
+        [
+          291,
+          177
+        ],
+        [
+          291,
+          227
+        ],
+        [
+          135,
+          227
+        ]
+      ]
+    },
+    {
+      "text": "Emall",
+      "confidence": 0.677,
+      "box": [
+        [
+          42,
+          292
+        ],
+        [
+          108,
+          292
+        ],
+        [
+          108,
+          320
+        ],
+        [
+          42,
+          320
+        ]
+      ]
+    },
+    {
+      "text": "Password",
+      "confidence": 0.76,
+      "box": [
+        [
+          42,
+          416
+        ],
+        [
+          156,
+          416
+        ],
+        [
+          156,
+          444
+        ],
+        [
+          42,
+          444
+        ]
+      ]
+    },
+    {
+      "text": "Renambet",
+      "confidence": 0.418,
+      "box": [
+        [
+          85,
+          531
+        ],
+        [
+          177,
+          531
+        ],
+        [
+          177,
+          549
+        ],
+        [
+          85,
+          549
+        ]
+      ]
+    },
+    {
+      "text": "Forgot password?",
+      "confidence": 0.774,
+      "box": [
+        [
+          237,
+          525
+        ],
+        [
+          396,
+          525
+        ],
+        [
+          396,
+          555
+        ],
+        [
+          237,
+          555
+        ]
+      ]
+    },
+    {
+      "text": "SUBMIT",
+      "confidence": 0.958,
+      "box": [
+        [
+          161,
+          613
+        ],
+        [
+          281,
+          613
+        ],
+        [
+          281,
+          649
+        ],
+        [
+          161,
+          649
+        ]
+      ]
+    },
+    {
+      "text": "Create account",
+      "confidence": 0.878,
+      "box": [
+        [
+          141,
+          713
+        ],
+        [
+          286,
+          713
+        ],
+        [
+          286,
+          741
+        ],
+        [
+          141,
+          741
+        ]
+      ]
+    }
+  ],
+  "mapped_components": [
+    {
+      "class": "Check Box",
+      "confidence": 0.794,
+      "x1": 110.9,
+      "y1": 595.8,
+      "x2": 330.9,
+      "y2": 663.2,
+      "texts": [
+        "SUBMIT"
+      ]
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.769,
+      "x1": 48.3,
+      "y1": 327.9,
+      "x2": 388.6,
+      "y2": 389.9,
+      "texts": []
+    },
+    {
+      "class": "Label",
+      "confidence": 0.691,
+      "x1": 141.7,
+      "y1": 714.7,
+      "x2": 283.6,
+      "y2": 742.1,
+      "texts": [
+        "Create account"
+      ]
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.332,
+      "x1": 76.7,
+      "y1": 451.7,
+      "x2": 399.2,
+      "y2": 512.2,
+      "texts": []
+    },
+    {
+      "class": "Label",
+      "confidence": 0.213,
+      "x1": 39.6,
+      "y1": 289.4,
+      "x2": 110.4,
+      "y2": 320.1,
+      "texts": [
+        "Emall"
+      ]
+    },
+    {
+      "class": "Check Box",
+      "confidence": 0.212,
+      "x1": 52.7,
+      "y1": 525.1,
+      "x2": 176.1,
+      "y2": 554.9,
+      "texts": [
+        "Renambet"
+      ]
+    },
+    {
+      "class": "Radio Button",
+      "confidence": 0.181,
+      "x1": 139.2,
+      "y1": 173.6,
+      "x2": 290.9,
+      "y2": 229.7,
+      "texts": [
+        "LOGIN"
+      ]
+    }
+  ],
+  "layout": {
+    "mode": "single",
+    "page": {
+      "width": 359.6,
+      "height": 568.5
+    },
+    "rows": [
+      {
+        "row": 1,
+        "components": [
+          {
+            "class": "Radio Button",
+            "confidence": 0.181,
+            "x1": 139.2,
+            "y1": 173.6,
+            "x2": 290.9,
+            "y2": 229.7,
+            "texts": [
+              "LOGIN"
+            ],
+            "center_y": 201.64999999999998,
+            "center_x": 215.04999999999998,
+            "pixel_width": 151.7,
+            "pixel_height": 56.099999999999994
+          }
+        ]
+      },
+      {
+        "row": 2,
+        "components": [
+          {
+            "class": "Label",
+            "confidence": 0.213,
+            "x1": 39.6,
+            "y1": 289.4,
+            "x2": 110.4,
+            "y2": 320.1,
+            "texts": [
+              "Emall"
+            ],
+            "center_y": 304.75,
+            "center_x": 75.0,
+            "pixel_width": 70.80000000000001,
+            "pixel_height": 30.700000000000045
+          }
+        ]
+      },
+      {
+        "row": 3,
+        "components": [
+          {
+            "class": "Textbox",
+            "confidence": 0.769,
+            "x1": 48.3,
+            "y1": 327.9,
+            "x2": 388.6,
+            "y2": 389.9,
+            "texts": [],
+            "center_y": 358.9,
+            "center_x": 218.45000000000002,
+            "pixel_width": 340.3,
+            "pixel_height": 62.0
+          }
+        ]
+      },
+      {
+        "row": 4,
+        "components": [
+          {
+            "class": "Textbox",
+            "confidence": 0.332,
+            "x1": 76.7,
+            "y1": 451.7,
+            "x2": 399.2,
+            "y2": 512.2,
+            "texts": [],
+            "center_y": 481.95000000000005,
+            "center_x": 237.95,
+            "pixel_width": 322.5,
+            "pixel_height": 60.50000000000006
+          }
+        ]
+      },
+      {
+        "row": 5,
+        "components": [
+          {
+            "class": "Check Box",
+            "confidence": 0.212,
+            "x1": 52.7,
+            "y1": 525.1,
+            "x2": 176.1,
+            "y2": 554.9,
+            "texts": [
+              "Renambet"
+            ],
+            "center_y": 540.0,
+            "center_x": 114.4,
+            "pixel_width": 123.39999999999999,
+            "pixel_height": 29.799999999999955
+          }
+        ]
+      },
+      {
+        "row": 6,
+        "components": [
+          {
+            "class": "Check Box",
+            "confidence": 0.794,
+            "x1": 110.9,
+            "y1": 595.8,
+            "x2": 330.9,
+            "y2": 663.2,
+            "texts": [
+              "SUBMIT"
+            ],
+            "center_y": 629.5,
+            "center_x": 220.89999999999998,
+            "pixel_width": 219.99999999999997,
+            "pixel_height": 67.40000000000009
+          }
+        ]
+      },
+      {
+        "row": 7,
+        "components": [
+          {
+            "class": "Label",
+            "confidence": 0.691,
+            "x1": 141.7,
+            "y1": 714.7,
+            "x2": 283.6,
+            "y2": 742.1,
+            "texts": [
+              "Create account"
+            ],
+            "center_y": 728.4000000000001,
+            "center_x": 212.65,
+            "pixel_width": 141.90000000000003,
+            "pixel_height": 27.399999999999977
+          }
+        ]
+      }
+    ],
+    "left": [
+      {
+        "row": 1,
+        "components": [
+          {
+            "class": "Radio Button",
+            "confidence": 0.181,
+            "x1": 139.2,
+            "y1": 173.6,
+            "x2": 290.9,
+            "y2": 229.7,
+            "texts": [
+              "LOGIN"
+            ],
+            "center_y": 201.64999999999998,
+            "center_x": 215.04999999999998,
+            "pixel_width": 151.7,
+            "pixel_height": 56.099999999999994
+          }
+        ]
+      },
+      {
+        "row": 2,
+        "components": [
+          {
+            "class": "Label",
+            "confidence": 0.213,
+            "x1": 39.6,
+            "y1": 289.4,
+            "x2": 110.4,
+            "y2": 320.1,
+            "texts": [
+              "Emall"
+            ],
+            "center_y": 304.75,
+            "center_x": 75.0,
+            "pixel_width": 70.80000000000001,
+            "pixel_height": 30.700000000000045
+          }
+        ]
+      },
+      {
+        "row": 3,
+        "components": [
+          {
+            "class": "Textbox",
+            "confidence": 0.769,
+            "x1": 48.3,
+            "y1": 327.9,
+            "x2": 388.6,
+            "y2": 389.9,
+            "texts": [],
+            "center_y": 358.9,
+            "center_x": 218.45000000000002,
+            "pixel_width": 340.3,
+            "pixel_height": 62.0
+          }
+        ]
+      },
+      {
+        "row": 4,
+        "components": [
+          {
+            "class": "Textbox",
+            "confidence": 0.332,
+            "x1": 76.7,
+            "y1": 451.7,
+            "x2": 399.2,
+            "y2": 512.2,
+            "texts": [],
+            "center_y": 481.95000000000005,
+            "center_x": 237.95,
+            "pixel_width": 322.5,
+            "pixel_height": 60.50000000000006
+          }
+        ]
+      },
+      {
+        "row": 5,
+        "components": [
+          {
+            "class": "Check Box",
+            "confidence": 0.212,
+            "x1": 52.7,
+            "y1": 525.1,
+            "x2": 176.1,
+            "y2": 554.9,
+            "texts": [
+              "Renambet"
+            ],
+            "center_y": 540.0,
+            "center_x": 114.4,
+            "pixel_width": 123.39999999999999,
+            "pixel_height": 29.799999999999955
+          }
+        ]
+      },
+      {
+        "row": 6,
+        "components": [
+          {
+            "class": "Check Box",
+            "confidence": 0.794,
+            "x1": 110.9,
+            "y1": 595.8,
+            "x2": 330.9,
+            "y2": 663.2,
+            "texts": [
+              "SUBMIT"
+            ],
+            "center_y": 629.5,
+            "center_x": 220.89999999999998,
+            "pixel_width": 219.99999999999997,
+            "pixel_height": 67.40000000000009
+          }
+        ]
+      },
+      {
+        "row": 7,
+        "components": [
+          {
+            "class": "Label",
+            "confidence": 0.691,
+            "x1": 141.7,
+            "y1": 714.7,
+            "x2": 283.6,
+            "y2": 742.1,
+            "texts": [
+              "Create account"
+            ],
+            "center_y": 728.4000000000001,
+            "center_x": 212.65,
+            "pixel_width": 141.90000000000003,
+            "pixel_height": 27.399999999999977
+          }
+        ]
+      }
+    ],
+    "right": []
+  },
+  "generated_code": "function GeneratedPage() {\n  return (\n    <div className=\"min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6\">\n      <div className=\"w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8 flex flex-col\">\n        <div className=\"w-full mb-4\">\n          <div className=\"text-gray-700 text-center\">LOGIN</div>\n        </div>\n        <div className=\"w-full mb-4\">\n          <label className=\"text-sm font-semibold text-gray-700 block mb-1\">Emall</label>\n        </div>\n        <div className=\"w-full mb-4\">\n          <input type=\"text\" placeholder=\"Enter text...\" className=\"w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm\" />\n        </div>\n        <div className=\"w-full mb-4\">\n          <input type=\"text\" placeholder=\"Enter text...\" className=\"w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm\" />\n        </div>\n        <div className=\"w-full mb-4\">\n          <label className=\"inline-flex items-center gap-2 cursor-pointer\"><span className=\"text-sm text-gray-700 font-medium\">Renambet</span><input type=\"checkbox\" className=\"w-4 h-4 rounded text-blue-600 focus:ring-blue-500\" /></label>\n        </div>\n        <div className=\"w-full mb-4\">\n          <button className=\"w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow transition-colors text-center\">SUBMIT</button>\n        </div>\n        <div className=\"w-full mb-4\">\n          <label className=\"text-sm font-semibold text-gray-700 block mb-1\">Create account</label>\n        </div>\n      </div>\n    </div>\n  );\n}\n\nexport default GeneratedPage;"
+}

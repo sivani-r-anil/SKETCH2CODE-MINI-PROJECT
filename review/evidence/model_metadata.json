@@ -1,0 +1,45 @@
+{
+  "date": "2026-08-30T12:40:59.306629+00:00",
+  "version": "8.4.135",
+  "train_metrics": {
+    "metrics/precision(B)": 0.93678,
+    "metrics/recall(B)": 0.97725,
+    "metrics/mAP50(B)": 0.96768,
+    "metrics/mAP50-95(B)": 0.84588,
+    "val/box_loss": 0.56602,
+    "val/cls_loss": 0.63867,
+    "val/dfl_loss": 0.87841,
+    "fitness": 0.84588
+  },
+  "names": {
+    "0": "Button",
+    "1": "Carousel",
+    "2": "Check Box",
+    "3": "Form",
+    "4": "Heading",
+    "5": "Image",
+    "6": "Label",
+    "7": "Link",
+    "8": "Pagination",
+    "9": "Paragraph",
+    "10": "Password box",
+    "11": "Radio Button",
+    "12": "Select",
+    "13": "Subheading",
+    "14": "Table data",
+    "15": "Table head",
+    "16": "Table row",
+    "17": "Table",
+    "18": "Textarea",
+    "19": "Textbox"
+  },
+  "train_args": {
+    "model": "yolov8n.pt",
+    "data": "/content/sketch2code-7/data.yaml",
+    "epochs": 50,
+    "batch": 8,
+    "imgsz": 640,
+    "seed": 0
+  },
+  "sha256": "29d1a0be1b49e33bdf81a6fb1a6214e675c85378e40700dfe2f81e7c559fbe8c"
+}

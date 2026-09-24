@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+.env
+node_modules/
+dist/
+backend/uploads/
+.venv/
+.env.*
+!.env.example
+*.log

@@ -1,0 +1,21 @@
+{
+  "errors": [],
+  "results": {
+    "login": {
+      "text": "LOGIN\nEmail\nPassword\nRemember\n\nForgot password?\n\nSUBMIT\n\nCreate account",
+      "inputs": 3,
+      "status": ""
+    },
+    "signup": {
+      "text": "SketchHub\nHome Features Pricing\nSign Up\nCreate Your Account\n\nJoin SketchHub and start building amazing designs\n\nFull Name\nButton\nButton\nEmail Address\nPassword\nDesign Faster\nConfirm Password\n\nEasy to use\n\nagree to the Terms of Service and Privacy Policy\n\nBeautiful templates\n\nCollaborate with your team\n\nCreate Account\n\nor sign up with\n\nGoogle\nGitHub\nMicrosoft\n\nAlready have an account? Log in",
+      "inputs": 5,
+      "status": ""
+    },
+    "exapmle": {
+      "text": "HEADER\n(first thing YOu want users t0 see)\n\nBODY\n\n(followed by the content}\n\nFOOTER\n\n(typically the less important stutf)",
+      "inputs": 0,
+      "status": ""
+    }
+  },
+  "method": "Real recorded inference outputs replayed through the React frontend for rendering verification."
+}

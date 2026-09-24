@@ -1,0 +1,11 @@
+# Tested with Python 3.12. Install the CPU PyTorch pair first (see README).
+torch==2.8.0
+torchvision==0.23.0
+ultralytics==8.4.135
+easyocr==1.7.2
+opencv-python==4.12.0.88
+opencv-python-headless==4.12.0.88
+numpy==2.2.6
+fastapi==0.115.12
+uvicorn==0.34.2
+python-multipart==0.0.20

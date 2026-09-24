@@ -1,0 +1,15 @@
+{
+  "errors": [],
+  "text": "Welcome Back\nLogin to your account\nEmail\nPassword\nRemember me\nForgot password?\nLogin\n\nDon't have an account?\n\nSign UP",
+  "interactive": {
+    "email": "student@example.com",
+    "passwordType": "password",
+    "checked": true
+  },
+  "editorWorks": true,
+  "syntaxErrorShown": "Preview error: unknown: Unexpected token (1:25)\n\n> 1 | function GeneratedPage( {\n    |                          ^",
+  "overflow": {
+    "scroll": 340,
+    "viewport": 340
+  }
+}
