@@ -14,6 +14,77 @@ function downloadFile(name, content, type) {
   URL.revokeObjectURL(url)
 }
 
+function buildPreviewDocument(preview) {
+  return `
+                    <!DOCTYPE html>
+                    <html>
+                      <head>
+                        <meta charset="utf-8" />
+                        <meta name="viewport" content="width=device-width, initial-scale=1" />
+                        <script src="https://cdn.tailwindcss.com"></script>
+                        <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+                        <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+                      </head>
+
+                      <body style="margin:0;">
+                        <div id="status"></div>
+                        <div id="root"></div>
+
+                        <script>
+                          function showError(error) {
+                            const status = document.getElementById("status");
+                            status.style.cssText = "margin:16px;padding:12px;color:#b91c1c;background:#fee2e2;border-radius:8px;font-family:Arial;white-space:pre-wrap;";
+                            status.textContent = "Preview error: " + (error.message || error);
+                          }
+                          window.addEventListener("error", event => showError(event.error || event.message));
+                          window.addEventListener("unhandledrejection", event => showError(event.reason));
+                          try {
+                            const compileError = ${scriptLiteral(preview.error)};
+                            if (compileError) throw new Error(compileError);
+                            if (!window.tailwind) throw new Error("Tailwind CSS could not load. Check your connection and reload.");
+                            if (!window.React || !window.ReactDOM) throw new Error("Preview libraries could not load. Check your internet connection and reload.");
+                            const rawJs =
+                              ${scriptLiteral(preview.code)};
+
+                            if (!rawJs) {
+                              document.getElementById("status").innerHTML =
+                                "<div style='padding:20px;color:#64748b;font-family:Arial;'>Waiting for valid code...</div>";
+                            } else {
+                              const {
+                                useState,
+                                useEffect,
+                                useRef,
+                                useMemo
+                              } = React;
+
+                              const ComponentToRender = new Function("React", "useState", "useEffect", "useRef", "useMemo",
+                                rawJs + "\\nreturn typeof GeneratedPage !== 'undefined' ? GeneratedPage : (typeof App !== 'undefined' ? App : null);"
+                              )(React, useState, useEffect, useRef, useMemo);
+
+                              if (!ComponentToRender) {
+                                throw new Error(
+                                  "GeneratedPage component not found."
+                                );
+                              }
+
+                              const root =
+                                ReactDOM.createRoot(
+                                  document.getElementById("root")
+                                );
+
+                              root.render(
+                                React.createElement(ComponentToRender)
+                              );
+                            }
+                          } catch (error) {
+                            showError(error);
+                          }
+                        </script>
+                      </body>
+                    </html>
+                  `
+}
+
 function App() {
   const [message, setMessage] = useState("")
   const [image, setImage] = useState(null)
@@ -118,6 +189,15 @@ function App() {
     }
   }
 
+  const previewDocument = useMemo(() => buildPreviewDocument(preview), [preview])
+  const [previewWidth, setPreviewWidth] = useState("1280")
+  const selectedTheme = editableCode.match(/data-sketch-theme=["'](light|dark|blue)["']/)?.[1] || "light"
+  const canChangeTheme = /data-sketch-theme=["'](light|dark|blue)["']/.test(editableCode)
+    && editableCode.includes("--s2c-page")
+  const changeTheme = (theme) => {
+    // Modify Monaco's current buffer, preserving user edits and layout.
+    setEditableCode(code => code.replace(/data-sketch-theme=["'](light|dark|blue)["']/, `data-sketch-theme="${theme}"`))
+  }
   const hasResults = Boolean(generatedCode)
 
   return (
@@ -278,7 +358,7 @@ function App() {
               </div>
             </section>
 
-            <section className="grid lg:grid-cols-2 gap-6 mb-8">
+            <section className="grid gap-6 mb-8">
 
               {/* CODE */}
               <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
@@ -314,7 +394,7 @@ function App() {
 
               {/* PREVIEW */}
               <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-200 flex justify-between items-center">
+                <div className="px-5 py-4 border-b border-slate-200 flex flex-wrap gap-3 justify-between items-center">
                   <div>
                     <h3 className="font-semibold">
                       Live Preview
@@ -324,85 +404,29 @@ function App() {
                     </p>
                   </div>
 
-                  <div className="flex gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-400"></span>
-                    <span className="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
-                    <span className="w-2.5 h-2.5 rounded-full bg-green-400"></span>
+                  <div className="flex flex-wrap items-center gap-3 text-sm">
+                    <label>Theme <select aria-label="Generated interface theme" value={selectedTheme} disabled={!canChangeTheme} onChange={event => changeTheme(event.target.value)} className="border rounded-lg p-2 disabled:opacity-50">
+                      <option value="light">Light</option><option value="dark">Dark</option><option value="blue">Blue</option>
+                    </select></label>
+                    <label>Viewport <select aria-label="Preview viewport" value={previewWidth} onChange={event => setPreviewWidth(event.target.value)} className="border rounded-lg p-2">
+                      <option value="1280">Desktop · 1280 px</option><option value="768">Tablet · 768 px</option><option value="390">Mobile · 390 px</option><option value="auto">Fit available width</option>
+                    </select></label>
+                    <button disabled={Boolean(preview.error)} className="text-blue-700 disabled:opacity-50" onClick={() => downloadFile("GeneratedPage.html", previewDocument, "text/html")}>Download HTML</button>
                   </div>
                 </div>
 
                 {preview.error && <p role="alert" className="p-4 text-sm text-red-700 bg-red-50 whitespace-pre-wrap">Preview error: {preview.error}</p>}
+                <p className="px-5 py-2 text-xs text-slate-500">Select a viewport to check responsive layouts. Scroll horizontally when the selected width exceeds the available space. Preview and HTML export require an internet connection.</p>
+                {!canChangeTheme && <p className="px-5 py-2 text-xs text-amber-800">Theme selection requires the generated theme attribute and tokens in the editor.</p>}
+                <div className="overflow-auto bg-slate-100">
                 <iframe
                   title="Live Preview"
                   sandbox="allow-scripts"
-                  className="w-full h-[520px] bg-white"
-                  srcDoc={`
-                    <!DOCTYPE html>
-                    <html>
-                      <head>
-                        <meta charset="utf-8" />
-                        <script src="https://cdn.tailwindcss.com"></script>
-                        <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-                        <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-                      </head>
-
-                      <body style="margin:0;">
-                        <div id="status"></div>
-                        <div id="root"></div>
-
-                        <script>
-                          function showError(error) {
-                            const status = document.getElementById("status");
-                            status.style.cssText = "margin:16px;padding:12px;color:#b91c1c;background:#fee2e2;border-radius:8px;font-family:Arial;white-space:pre-wrap;";
-                            status.textContent = "Preview error: " + (error.message || error);
-                          }
-                          window.addEventListener("error", event => showError(event.error || event.message));
-                          window.addEventListener("unhandledrejection", event => showError(event.reason));
-                          try {
-                            const compileError = ${scriptLiteral(preview.error)};
-                            if (compileError) throw new Error(compileError);
-                            if (!window.React || !window.ReactDOM) throw new Error("Preview libraries could not load. Check your internet connection and reload.");
-                            const rawJs =
-                              ${scriptLiteral(preview.code)};
-
-                            if (!rawJs) {
-                              document.getElementById("status").innerHTML =
-                                "<div style='padding:20px;color:#64748b;font-family:Arial;'>Waiting for valid code...</div>";
-                            } else {
-                              const {
-                                useState,
-                                useEffect,
-                                useRef,
-                                useMemo
-                              } = React;
-
-                              const ComponentToRender = new Function("React", "useState", "useEffect", "useRef", "useMemo",
-                                rawJs + "\\nreturn typeof GeneratedPage !== 'undefined' ? GeneratedPage : (typeof App !== 'undefined' ? App : null);"
-                              )(React, useState, useEffect, useRef, useMemo);
-
-                              if (!ComponentToRender) {
-                                throw new Error(
-                                  "GeneratedPage component not found."
-                                );
-                              }
-
-                              const root =
-                                ReactDOM.createRoot(
-                                  document.getElementById("root")
-                                );
-
-                              root.render(
-                                React.createElement(ComponentToRender)
-                              );
-                            }
-                          } catch (error) {
-                            showError(error);
-                          }
-                        </script>
-                      </body>
-                    </html>
-                  `}
+                  className="block mx-auto h-[760px] bg-white border-0"
+                  srcDoc={previewDocument}
+                  style={{ width: previewWidth === "auto" ? "100%" : Number(previewWidth), minWidth: previewWidth === "auto" ? undefined : Number(previewWidth) }}
                 />
+                </div>
               </div>
 
             </section>

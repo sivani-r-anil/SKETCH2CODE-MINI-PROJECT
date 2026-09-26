@@ -1,6 +1,7 @@
 from pathlib import Path
 from threading import Lock
 from uuid import uuid4
+import base64
 import logging
 import time
 import cv2
@@ -9,7 +10,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from preprocessing import preprocess_image
-from detection import detect_components, find_rectangles, reconcile_detections, find_markers
+from detection import detect_components, find_rectangles, reconcile_detections, find_markers, find_containers
 from ocr import extract_text_with_links
 from mapping import map_text_to_components
 from layout import reconstruct_layout
@@ -37,6 +38,31 @@ def hello():
     return {'message': 'Hello from FastAPI!'}
 
 
+def attach_image_crops(components, image):
+    """Embed raster assets so preview and JSX export do not need upload URLs."""
+    if image is None:
+        return
+    height, width = image.shape[:2]
+    for component in components:
+        if component['class'] != 'Image':
+            continue
+        x1, y1 = max(0, int(component['x1'])), max(0, int(component['y1']))
+        x2, y2 = min(width, int(component['x2'])), min(height, int(component['y2']))
+        if x2 <= x1 or y2 <= y1:
+            continue
+        crop = image[y1:y2, x1:x2]
+        # Bound asset dimensions while preserving the inferred aspect ratio.
+        scale = min(1, 1200/max(crop.shape[:2]))
+        if scale < 1:
+            size = (max(1, round(crop.shape[1]*scale)), max(1, round(crop.shape[0]*scale)))
+            crop = cv2.resize(crop, size, interpolation=cv2.INTER_AREA)
+        success, encoded = cv2.imencode('.png', crop)
+        if success:
+            component['image_src'] = 'data:image/png;base64,' + base64.b64encode(encoded).decode('ascii')
+            component['asset_source'] = 'wireframe-crop'
+            component['alt'] = 'Cropped illustration from the uploaded wireframe'
+
+
 def run_pipeline(file_path, processed_path):
     # FastAPI executes this in a worker thread; cap native pools here too.
     torch.set_num_threads(4)
@@ -51,7 +77,9 @@ def run_pipeline(file_path, processed_path):
     detections = reconcile_detections(original_detections, processed_detections, rectangles)
     raw_ocr, ocr_texts = extract_text_with_links(file_path)
     markers = find_markers(file_path, rectangles)
-    mapped = map_text_to_components(detections, ocr_texts, markers, rectangles)
+    containers = find_containers(file_path)
+    mapped = map_text_to_components(detections, ocr_texts, markers, rectangles, containers)
+    attach_image_crops(mapped, cv2.imread(str(file_path)))
     layout = reconstruct_layout(mapped)
     warnings = []
     if not detections:
@@ -60,12 +88,15 @@ def run_pipeline(file_path, processed_path):
         warnings.append('Some OCR text has low confidence. Check it against the image.')
     if any(c.get('corrections') for c in mapped):
         warnings.append('Some components were inferred or corrected using geometry and OCR. Review the processing details.')
-    if any(c['class'] == 'Image' and c.get('source') == 'geometry+yolo' for c in mapped):
-        warnings.append('Nested textless shapes are represented as an image placeholder; artwork was not reconstructed.')
+    if any(c.get('image_src') for c in mapped):
+        warnings.append('Illustrations use crops of the original wireframe, not reconstructed editable artwork.')
+    if any(c['class'] == 'Image' and not c.get('image_src') for c in mapped):
+        warnings.append('Some image regions could not be cropped and remain placeholders.')
     if any(c['class'] in {'Carousel', 'Table', 'Table row', 'Table data', 'Table head', 'Pagination'} for c in mapped):
         warnings.append('Complex table/carousel/pagination widgets are represented as placeholders.')
     return {'detections': detections, 'original_detections': original_detections,
             'processed_detections': processed_detections, 'rectangles': rectangles, 'markers': markers,
+            'container_candidates': containers,
             'raw_ocr_texts': raw_ocr, 'ocr_texts': ocr_texts,
             'mapped_components': mapped, 'layout': layout,
             'generated_code': generate_react_code(layout), 'warnings': warnings,

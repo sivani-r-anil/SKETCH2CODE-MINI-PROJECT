@@ -1,9 +1,11 @@
 """Spatial association first; conservative, explainable semantic corrections second."""
 from statistics import median
+from copy import deepcopy
 import re
 from detection import area, intersection
 
 TEXT_CLASSES = {'Heading', 'Subheading', 'Label', 'Paragraph', 'Link'}
+CONTAINERS = {'Form', 'Card', 'Container', 'Panel', 'Section', 'Table', 'Table row'}
 INPUTS = {'Textbox', 'Password box', 'Textarea', 'Select'}
 
 
@@ -34,7 +36,7 @@ def change_class(c, new_class, reason):
 
 def prepare_regions(detections, text_items, rectangles, markers):
     """Recover only geometry-supported regions; keep inference provenance explicit."""
-    regions = [dict(d) for d in detections]
+    regions = deepcopy(detections)
     nav_text_ids = set()
     removed = set()
     for i, c in enumerate(regions):
@@ -62,7 +64,7 @@ def prepare_regions(detections, text_items, rectangles, markers):
     for r in rectangles or []:
         runs = [o for o in text_items if intersection(r, o)/max(1, area(o)) > .85]
         if (r.get('filled') and runs and not any(intersection(r, c)/max(1, min(area(r), area(c))) > .5
-                                                for c in regions if c['class'] not in TEXT_CLASSES | {'Form'})):
+                                                for c in regions if c['class'] not in TEXT_CLASSES | CONTAINERS)):
             regions.append({**r, 'class': 'Button', 'confidence': None, 'source': 'opencv+ocr',
                             'outline': True, 'corrections': ['Filled closed rectangle with an OCR caption; missed by YOLO.']})
     for m in markers or []:
@@ -72,14 +74,36 @@ def prepare_regions(detections, text_items, rectangles, markers):
         adjacent = [o for o in text_items if 0 <= o['x1']-m['x2'] < 2*h
                     and abs((o['y1']+o['y2']-m['y1']-m['y2'])/2) < .6*h]
         if adjacent and not any(intersection(c, m)/max(1, area(m)) > .5 for c in regions
-                                if c['class'] not in TEXT_CLASSES | {'Form'}):
+                                if c['class'] not in TEXT_CLASSES | CONTAINERS):
             regions.append({**m, 'class': 'Check Box', 'confidence': None, 'source': 'opencv+ocr',
                             'corrections': ['Square outline beside OCR text; missed by YOLO.']})
     return regions, nav_text_ids
 
 
-def map_text_to_components(detections, ocr_texts, markers=None, rectangles=None):
+def map_text_to_components(detections, ocr_texts, markers=None, rectangles=None, containers=None):
     text_items = [{**o, **text_box(o), 'ocr_id': i} for i, o in enumerate(ocr_texts)]
+    # A coloured fragment needs inline context; colour alone is not a link.
+    # Propagate that evidence across neighbouring fragments of the same run.
+    pending = [o for o in text_items if o.get('coloured_text')]
+    def adjacent(a, b):
+        h = min(a['y2']-a['y1'], b['y2']-b['y1'])
+        return (abs((a['y1']+a['y2']-b['y1']-b['y2'])/2) < h*.6
+                and -h*.2 <= max(a['x1'],b['x1'])-min(a['x2'],b['x2']) < h*1.2)
+    while pending:
+        group = [pending.pop(0)]
+        changed = True
+        while changed:
+            changed = False
+            for item in list(pending):
+                if any(adjacent(item, member) for member in group):
+                    group.append(item)
+                    pending.remove(item)
+                    changed = True
+        anchored = any(o.get('underlined') or o.get('link_hint') for o in group) or any(
+            not p.get('coloured_text') and any(adjacent(p, o) for o in group) for p in text_items)
+        if anchored:
+            for item in group:
+                item['link_hint'] = True
     detections, nav_text_ids = prepare_regions(detections, text_items, rectangles, markers)
     mapped = [{**d, 'id': f'component-{i}', 'source': d.get('source', 'yolo'), 'texts': [], 'ocr': []}
               for i, d in enumerate(detections)]
@@ -89,7 +113,7 @@ def map_text_to_components(detections, ocr_texts, markers=None, rectangles=None)
         choices = []
         for c in mapped:
             coverage = intersection(c, o) / max(1, area(o))
-            if c['class'] in {'Form', 'Table', 'Table row'}:
+            if c['class'] in CONTAINERS:
                 continue
             if c['class'] in TEXT_CLASSES:
                 continue  # Rebuild text runs from OCR geometry below.
@@ -143,15 +167,21 @@ def map_text_to_components(detections, ocr_texts, markers=None, rectangles=None)
     top = min((o['y1'] for o in text_items), default=0)
     for o in unmatched:
         kind = 'Paragraph'
+        # A tilted OCR box can be taller than its neighbours on the same line.
+        # Use nearby typography to avoid promoting half a sentence to a heading.
+        peers = [p for p in text_items if p['ocr_id'] != o['ocr_id']
+                 and abs((p['y1']+p['y2']-o['y1']-o['y2'])/2) < typical_height*.5
+                 and -.15*typical_height <= max(p['x1'],o['x1'])-min(p['x2'],o['x2']) < typical_height*1.5]
+        text_height = min([o['y2']-o['y1']] + [p['y2']-p['y1'] for p in peers])
         nearby = [c for c in fields if 0 <= c['y1']-o['y2'] <= typical_height*1.5
                   and c['x1']-typical_height <= o['x1'] < c['x2']]
-        if nearby:
+        if nearby and not (o.get('underlined') or o.get('link_hint')):
             kind = 'Label'
-        elif o.get('underlined') or o['ocr_id'] in nav_text_ids or any(d['class'] == 'Link' and d['confidence'] >= .4
+        elif o.get('underlined') or o.get('link_hint') or o['ocr_id'] in nav_text_ids or any(d['class'] == 'Link' and (d.get('confidence') or 0) >= .4
                                           and intersection(d, o)/max(1, area(o)) >= .6
                                           for d in detections):
             kind = 'Link'
-        elif o['y2']-o['y1'] >= typical_height*1.5:
+        elif text_height >= typical_height*1.5:
             kind = 'Heading'
         elif o['y1']-top < typical_height*3:
             kind = 'Subheading'
@@ -173,7 +203,8 @@ def map_text_to_components(detections, ocr_texts, markers=None, rectangles=None)
         prev = merged[-1] if merged else None
         h = c['y2']-c['y1']
         if (prev and c['source'] == prev.get('source') == 'ocr'
-                and not any(o['ocr_id'] in nav_text_ids for o in c['ocr']+prev['ocr'])
+                and not any(o['ocr_id'] in nav_text_ids or (o.get('separate_run') and not o.get('coloured_text'))
+                            for o in c['ocr']+prev['ocr'])
                 and c['class'] == prev['class'] and c.get('for_id') == prev.get('for_id')
                 and abs((c['y1']+c['y2']-prev['y1']-prev['y2'])/2) < .5*min(h, prev['y2']-prev['y1'])
                 and -typical_height*.15 <= c['x1']-prev['x2'] <= typical_height*1.2):
@@ -186,7 +217,7 @@ def map_text_to_components(detections, ocr_texts, markers=None, rectangles=None)
     for c in merged:
         if c['class'] == 'Check Box' and not c['texts']:
             h = c['y2']-c['y1']
-            captions = [p for p in merged if p['class'] in {'Paragraph', 'Subheading', 'Link'}
+            captions = [p for p in merged if p['class'] in {'Paragraph', 'Subheading'}
                         and 0 <= p['x1']-c['x2'] < 2*h
                         and abs((p['y1']+p['y2']-c['y1']-c['y2'])/2) < .6*h]
             if captions:
@@ -194,4 +225,21 @@ def map_text_to_components(detections, ocr_texts, markers=None, rectangles=None)
                 c['texts'], c['ocr'] = p['texts'], p['ocr']
                 c['x2'] = p['x2']
                 merged.remove(p)
+    # Optional closed outlines need supporting content before becoming cards.
+    # Reject the outer page frame, artwork and boxes cutting through siblings.
+    content = [c for c in merged if c['class'] not in CONTAINERS]
+    for r in containers or []:
+        inside = [c for c in content if intersection(r, c)/max(1, area(c)) >= .95]
+        if len(inside) < 2 or len(inside) >= len(content)*.9:
+            continue
+        if not any(c['class'] in INPUTS | {'Button', 'Check Box', 'Radio Button'} for c in inside):
+            continue
+        if any(.05 < intersection(r, c)/max(1, area(c)) < .95 for c in content):
+            continue
+        if any(intersection(r, c)/max(1, min(area(r), area(c))) > .85
+               for c in merged if c['class'] in CONTAINERS | {'Image'}):
+            continue
+        merged.append({**r, 'class': 'Card', 'id': f'container-{len(merged)}',
+                       'texts': [], 'ocr': [], 'confidence': None, 'source': 'opencv+geometry',
+                       'corrections': ['Closed outline enclosing multiple mapped components.']})
     return merged
