@@ -106,6 +106,28 @@ def _uses_hierarchy(node):
     return any(_uses_hierarchy(child) for child in node.get('children', []))
 
 
+def _is_inline_text_row(children):
+    """Only nearby prose/link fragments share a line; independent items keep tracks."""
+    if len(children) < 2 or any(c.get('kind') != 'component' for c in children):
+        return False
+    kinds = [c['component'].get('class') for c in children]
+    allowed = {'Paragraph', 'Label', 'Link', 'Check Box', 'Radio Button'}
+    if not all(k in allowed for k in kinds):
+        return False
+    # A navigation row of links or a row of independent choices is not prose.
+    if 'Link' not in kinds or not any(k in {'Paragraph', 'Label', 'Check Box', 'Radio Button'} for k in kinds):
+        return False
+    if sum(k in {'Check Box', 'Radio Button'} for k in kinds) > 1:
+        return False
+    for left, right in zip(children, children[1:]):
+        height = max(1, min(left['y2']-left['y1'], right['y2']-right['y1']))
+        gap = right['x1']-left['x2']
+        overlap = min(left['y2'], right['y2'])-max(left['y1'], right['y1'])
+        if gap < -height*.25 or gap > height*.9 or overlap < height*.5:
+            return False
+    return True
+
+
 def render_layout_tree(node, scale):
     """Render geometric groups in normal flow; never position controls absolutely."""
     kind = node.get('kind', 'stack')
@@ -123,6 +145,14 @@ def render_layout_tree(node, scale):
             render_layout_tree(child, scale) for child in children) + '</section>'
     if not children:
         return '<div />'
+
+    if kind == 'row' and _is_inline_text_row(children):
+        # Ink widths are not text container widths. Inline flow lets sentences
+        # wrap naturally while keeping each link and choice interactive.
+        fragments = [render_layout_tree(child, scale) for child in children]
+        return ('<div data-layout-kind="inline" className="min-w-0 text-sm leading-6 '
+                '[&>p]:inline [&>label]:inline [&>label>input]:mr-2">'
+                + '{" "}'.join(fragments) + '</div>')
 
     if kind in {'row', 'columns'}:
         widths = [max(1, child['x2']-child['x1']) for child in children]

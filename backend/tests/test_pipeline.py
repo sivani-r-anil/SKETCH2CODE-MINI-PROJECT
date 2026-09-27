@@ -118,7 +118,7 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(layout['mode'],'columns')
             self.assertEqual(len(layout['header']['rows']),1)
             self.assertEqual([len(c['rows']) for c in layout['columns']],[3,3])
-            self.assertIn('sketch-columns',generate_react_code(layout))
+            self.assertIn('data-layout-kind="columns"', generate_react_code(layout))
 
     def test_literal_text_is_safe_in_jsx(self):
         layout=reconstruct_layout([box('Heading',0,0,200,40,texts=['{user} <script> "Hello"'])])

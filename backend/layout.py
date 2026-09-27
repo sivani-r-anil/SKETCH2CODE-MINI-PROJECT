@@ -175,6 +175,12 @@ def _column_groups(nodes):
     width = max(1, bounds['x2']-bounds['x1'])
     height = max(1, bounds['y2']-bounds['y1'])
     groups = _axis_groups(nodes, 'x')
+    # A persistent narrow gutter can separate dense panels. Require both
+    # sides to span most of the region, with several items and substantial width.
+    if len(groups) == 2 and all(
+            len(g) >= 3 and _bounds(g)['y2']-_bounds(g)['y1'] >= height*.75
+            and _bounds(g)['x2']-_bounds(g)['x1'] >= width*.25 for g in groups):
+        return groups
     # Small gaps inside a row are not evidence of independent columns.
     merged = []
     for group in groups:
@@ -240,6 +246,115 @@ def _spatial_tree(nodes, depth=0):
     return _group('stack', nodes, reason='No unambiguous whitespace cut.')
 
 
+def _table_groups(leaves):
+    """Use table predictions plus repeated OCR alignment, not table vocabulary."""
+    candidates = [n for n in leaves if n['component']['class'] in {'Table', 'Table data'}]
+    clusters = []
+    for node in candidates:
+        touching = []
+        for group in clusters:
+            if any(min(node['y2'], p['y2']) >= max(node['y1'], p['y1'])
+                   and min(node['x2'], p['x2'])-max(node['x1'], p['x1'])
+                   > .7*min(node['x2']-node['x1'], p['x2']-p['x1']) for p in group):
+                touching.append(group)
+        joined = [node]
+        for group in touching:
+            joined.extend(group)
+            clusters.remove(group)
+        clusters.append(joined)
+    tables, consumed = [], set()
+    for group in clusters:
+        bounds = _bounds(group)
+        members = [n for n in leaves if n['index'] not in consumed
+                   and (_inside(n, bounds) or n in group)]
+        words = {}
+        for n in members:
+            for o in n['component'].get('ocr', []):
+                words[o['ocr_id']] = o
+        if len(words) < 6:
+            continue
+        height = median(max(1, o['y2']-o['y1']) for o in words.values())
+        rows = []
+        for o in sorted(words.values(), key=lambda o: ((o['y1']+o['y2'])/2, o['x1'])):
+            cy = (o['y1']+o['y2'])/2
+            row = next((r for r in rows if abs(cy-median(
+                (p['y1']+p['y2'])/2 for p in r)) < height*.65), None)
+            if row is None:
+                rows.append([o])
+            else:
+                row.append(o)
+        # Require several multi-cell rows; one title bar is not a table.
+        multi_rows = [r for r in rows if len(r) >= 2]
+        if len(multi_rows) < 3:
+            continue
+        anchors = []
+        for row_index, row in enumerate(rows):
+            for o in sorted(row, key=lambda o: o['x1']):
+                match = next((a for a in anchors if abs(
+                    o['x1']-median(p['x1'] for _, p in a)) < height*1.2), None)
+                if match is None:
+                    anchors.append([(row_index, o)])
+                else:
+                    match.append((row_index, o))
+        anchors.sort(key=lambda a: median(p['x1'] for _, p in a))
+        # A split OCR phrase must not create a one-row column inside an
+        # established column's text extent (for example a split personal name).
+        consolidated = []
+        for anchor in anchors:
+            if (consolidated and len({i for i, _ in anchor}) == 1
+                    and len({i for i, _ in consolidated[-1]}) >= 3
+                    and min(p['x1'] for _, p in anchor)
+                        <= max(p['x2'] for _, p in consolidated[-1])+height*.3):
+                consolidated[-1].extend(anchor)
+            else:
+                consolidated.append(anchor)
+        anchors = consolidated
+        repeated = [a for a in anchors if len({i for i, _ in a}) >= 3]
+        if len(repeated) < 2:
+            continue
+        # Keep sparse edge columns (for example a header whose row IDs OCR missed).
+        starts = [median(p['x1'] for _, p in a) for a in anchors]
+        edges = [bounds['x1']] + [
+            (max(p['x2'] for _, p in left)+min(p['x1'] for _, p in right))/2
+            for left, right in zip(anchors, anchors[1:])] + [bounds['x2']]
+        if any(b <= a for a, b in zip(edges, edges[1:])):
+            continue  # Ambiguous overlapping columns: retain original evidence.
+        row_nodes = []
+        for row_index, row in enumerate(rows):
+            cells = []
+            for col in range(len(anchors)):
+                cell_words = [p for i, p in anchors[col] if i == row_index]
+                cell_words.sort(key=lambda p: p['x1'])
+                y1, y2 = min(p['y1'] for p in row), max(p['y2'] for p in row)
+                c = dict(x1=edges[col], x2=edges[col+1], y1=y1, y2=y2,
+                         id=f"table-{group[0]['index']}-{row_index}-{col}",
+                         **{'class': 'Paragraph'}, texts=[p['text'] for p in cell_words],
+                         ocr=cell_words, source='table-geometry')
+                cells.append(dict(kind='component', component=c,
+                                  **{k: c[k] for k in ('x1', 'x2', 'y1', 'y2')}))
+            row_nodes.append(_group('row', cells, role='table-row'))
+        # Unknown controls/icons remain available to the renderer as evidence;
+        # do not invent edit/delete actions from their position or OCR wording.
+        controls = [n for n in members if n['component']['class'] in
+                    {'Button', 'Check Box', 'Radio Button', 'Textbox', 'Select', 'Image'}]
+        for n in controls:
+            cy = (n['y1']+n['y2'])/2
+            row = min(row_nodes, key=lambda r: abs(cy-(r['y1']+r['y2'])/2))
+            col = min(range(len(starts)), key=lambda i: abs(n['x1']-starts[i]))
+            cell = row['children'][col]
+            # Text already appears in cells, so remove it from copied controls.
+            c = {**n['component'], 'texts': [], 'ocr': []}
+            child = {**n, 'component': c}
+            row['children'][col] = {**cell, 'kind': 'stack', 'children': [cell, child]}
+        node = _group('container', row_nodes, container_class='Section',
+                      role='table', column_edges=edges, index=group[0]['index'],
+                      source_indices=[n['index'] for n in members])
+        node.update(bounds)
+        tables.append(node)
+        consumed.update(n['index'] for n in members)
+    return tables, consumed
+
+
 def _hierarchy(components):
     leaves = []
     for index, component in enumerate(components):
@@ -247,10 +362,13 @@ def _hierarchy(components):
         leaves.append({'kind': 'component', 'component': c, 'index': index,
                        **{key: c[key] for key in ('x1', 'y1', 'x2', 'y2')}})
 
+    tables, table_members = _table_groups(leaves)
+    leaves = [n for n in leaves if n['index'] not in table_members]
+
     # Only explicit, mapped label associations form atomic fields.
     # Missing IDs must never make unrelated labels and controls match.
     used = set()
-    grouped = []
+    grouped = list(tables)
     for node in leaves:
         c = node['component']
         if c['class'] not in CONTROL_CLASSES or not c.get('id'):
