@@ -128,6 +128,49 @@ def _is_inline_text_row(children):
     return True
 
 
+def render_table(node):
+    """Render the layout's cells; never invent missing values or action labels."""
+    rows = node.get('children', [])
+    edges = node.get('column_edges', [])
+    if not rows or len(edges) < 2:
+        return '<div />'
+    count = len(edges)-1
+    width = max(1, edges[-1]-edges[0])
+    min_width = max(320, count*112)
+
+    def cell_content(cell):
+        if cell.get('kind') == 'component':
+            return generate_component(cell['component'])
+        # Cell children share normal flow; page-coordinate margins do not belong
+        # inside a table cell. Keep any mapped controls and images interactive.
+        return '<div className="flex flex-col gap-2">' + ''.join(
+            cell_content(child) for child in cell.get('children', [])) + '</div>'
+
+    parts = [
+        '<div data-layout-kind="table" role="region" aria-label="Reconstructed table" '
+        'tabIndex={0} className="w-full min-w-0 max-w-full overflow-x-auto rounded-lg '
+        'border border-[var(--s2c-border)] ' + FOCUS + '">',
+        '<table className="w-full table-fixed border-collapse text-left text-sm '
+        'text-[var(--s2c-text)]" style={{minWidth: ' + str(min_width) + '}}>',
+        '<colgroup>',
+    ]
+    for left, right in zip(edges, edges[1:]):
+        proportion = max(0, right-left)/width*100
+        parts.append('<col style={{width: ' + js(f'{proportion:.3f}%') + '}} />')
+    parts.append('</colgroup><tbody>')
+    for row_index, row in enumerate(rows):
+        background = 'bg-[var(--s2c-surface)]' if row_index % 2 == 0 else 'bg-[var(--s2c-soft)]'
+        parts.append('<tr className="' + background + '">')
+        for cell in row.get('children', []):
+            parts.append('<td className="border border-[var(--s2c-border)] px-3 py-3 '
+                         'align-top whitespace-normal [overflow-wrap:anywhere]">')
+            parts.append(cell_content(cell))
+            parts.append('</td>')
+        parts.append('</tr>')
+    parts.append('</tbody></table></div>')
+    return '\n'.join(parts)
+
+
 def render_layout_tree(node, scale):
     """Render geometric groups in normal flow; never position controls absolutely."""
     kind = node.get('kind', 'stack')
@@ -137,6 +180,8 @@ def render_layout_tree(node, scale):
     if kind == 'field':
         return '<div className="flex min-w-0 flex-col gap-2">' + ''.join(
             render_layout_tree(child, scale) for child in children) + '</div>'
+    if node.get('role') == 'table':
+        return render_table(node)
     if kind == 'container':
         # A container is represented once, with its actual descendants inside.
         caption = ' '.join(node.get('component', {}).get('texts', [])).strip()

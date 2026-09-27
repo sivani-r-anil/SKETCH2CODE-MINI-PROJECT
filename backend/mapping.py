@@ -46,6 +46,26 @@ def prepare_regions(detections, text_items, rectangles, markers):
                     and area(d) < area(c)*.65
                     and intersection(c, d)/max(1, area(d)) > .9]
         runs = reading_order([o for o in text_items if intersection(c, o)/max(1, area(o)) > .6])
+        # A header border is also a rectangle. It is not evidence that a whole
+        # navigation bar is a button. Require an enclosed image/logo region and
+        # several independent captions on one baseline before overriding it.
+        free_runs = [o for o in runs if not any(
+            intersection(o, child)/max(1, area(o)) > .6 for _, child in children)]
+        nav_height = median([o['y2']-o['y1'] for o in free_runs]) if free_runs else 1
+        outlined_navigation = (
+            c['class'] == 'Button' and c.get('outline') and not c.get('filled')
+            and len(free_runs) >= 3
+            and (c['x2']-c['x1']) > 6*max(1, c['y2']-c['y1'])
+            and any(child['class'] == 'Image' and child['x2'] < free_runs[0]['x1']
+                    for _, child in children)
+            and max((o['y1']+o['y2'])/2 for o in free_runs)
+                - min((o['y1']+o['y2'])/2 for o in free_runs) < nav_height*.6
+            and all(b['x1']-a['x2'] > nav_height*.6
+                    for a, b in zip(free_runs, free_runs[1:])))
+        if outlined_navigation:
+            removed.add(i)
+            nav_text_ids.update(o['ocr_id'] for o in free_runs)
+            continue
         # A wide enclosing detection with several separated captions is a group,
         # not one enormous button. Child controls retain ownership of their text.
         if children and len(runs) >= 3 and not c.get('outline'):
