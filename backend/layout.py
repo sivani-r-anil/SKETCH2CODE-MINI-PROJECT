@@ -203,12 +203,119 @@ def _column_groups(nodes):
     return merged
 
 
-def _spatial_tree(nodes, depth=0):
-    nodes = sorted(nodes, key=lambda n: (n['y1'], n['x1']))
+def _join_text_runs(nodes):
+    """Join adjacent OCR fragments on one baseline, tolerating tilted boxes.
+
+    Keep links, labels and controls separate. No text is inferred or rewritten.
+    This runs after parent assignment, so it cannot merge across containers.
+    """
+    groups = []
+    for node in sorted(nodes, key=lambda n: (n['y1'], n['x1'])):
+        c = node.get('component', {})
+        if node['kind'] != 'component' or c.get('class') not in {'Paragraph', 'Heading', 'Subheading'}:
+            groups.append([node])
+            continue
+        target = None
+        for group in groups:
+            if any(p['kind'] != 'component' or
+                   p.get('component', {}).get('class') != c['class'] for p in group):
+                continue
+            def same_line(p):
+                h = min(node['y2']-node['y1'], p['y2']-p['y1'])
+                overlap = min(node['y2'], p['y2'])-max(node['y1'], p['y1'])
+                gap = max(node['x1'], p['x1'])-min(node['x2'], p['x2'])
+                return (h > 0 and overlap >= h*.5 and gap >= -h*.15
+                        and abs(node['y1']+node['y2']-p['y1']-p['y2'])/2 < h*.6)
+            if all(same_line(p) for p in group) and any(
+                    max(node['x1'], p['x1'])-min(node['x2'], p['x2'])
+                    <= 1.5*min(node['y2']-node['y1'], p['y2']-p['y1']) for p in group):
+                target = group
+                break
+        if target is None:
+            groups.append([node])
+        else:
+            target.append(node)
+    result = []
+    for group in groups:
+        if len(group) == 1:
+            result.append(group[0])
+            continue
+        group.sort(key=lambda n: n['x1'])
+        bounds = _bounds(group)
+        component = {**group[0]['component'], **bounds,
+                     'texts': [t for n in group for t in n['component'].get('texts', [])],
+                     'ocr': [o for n in group for o in n['component'].get('ocr', [])]}
+        result.append({**group[0], **bounds, 'component': component})
+    return result
+
+
+def _panel_list_rows(nodes):
+    """Prefer paired rows in a text panel when repeated baselines support them.
+
+    This is scoped to explicit panels, not general two-column page sections.
+    A single leading caption may sit above the list.
+    """
+    if len(nodes) < 6 or any(n['kind'] != 'component' or
+            n.get('component', {}).get('class') not in
+            {'Paragraph', 'Subheading', 'Heading', 'Link'} for n in nodes):
+        return None
+    rows = []
+    for node in sorted(nodes, key=lambda n: (n['y1']+n['y2'])/2):
+        cy = (node['y1']+node['y2'])/2
+        target = next((row for row in rows if all(
+            abs(cy-(p['y1']+p['y2'])/2) < .6*min(node['y2']-node['y1'], p['y2']-p['y1'])
+            and (node['x1'] >= p['x2'] or p['x1'] >= node['x2']) for p in row)), None)
+        if target is None:
+            rows.append([node])
+        else:
+            target.append(node)
+    caption = rows[:1] if len(rows[0]) == 1 else []
+    pairs = rows[len(caption):]
+    if len(pairs) < 3 or any(len(row) != 2 for row in pairs):
+        return None
+    for row in pairs:
+        row.sort(key=lambda n: n['x1'])
+    height = median(n['y2']-n['y1'] for row in pairs for n in row)
+    if (max(row[0]['x1'] for row in pairs)-min(row[0]['x1'] for row in pairs) > height
+            or max(row[1]['x2'] for row in pairs)-min(row[1]['x2'] for row in pairs) > height):
+        return None
+    left = _bounds([row[0] for row in pairs])
+    right = _bounds([row[1] for row in pairs])
+    if right['x1']-left['x2'] < height*2:
+        return None
+    children = list(caption[0]) if caption else []
+    if children:
+        title = children[0]
+        component = title['component']
+        # A separate leading caption above repeated rows is a section title.
+        # Links and existing heading levels keep their original semantics.
+        if (component['class'] == 'Paragraph'
+                and title['y2'] <= min(n['y1'] for n in pairs[0])
+                and title['y2']-title['y1'] >= height
+                and len(' '.join(component.get('texts', [])).split()) <= 8):
+            children[0] = {**title, 'component': {
+                **component, 'class': 'Subheading',
+                'corrections': component.get('corrections', []) +
+                    ['Separate leading caption above aligned panel rows.']}}
+    for row in pairs:
+        # Shared track widths keep all descriptions and trailing values aligned.
+        # Only layout boxes change; component/OCR evidence remains untouched.
+        aligned = [{**n, 'x1': bounds['x1'], 'x2': bounds['x2']}
+                   for n, bounds in zip(row, (left, right))]
+        children.append(_group('row', aligned, role='list-row'))
+    return _group('stack', children, role='list')
+
+
+def _spatial_tree(nodes, depth=0, prefer_rows=False):
+    nodes = sorted(_join_text_runs(nodes), key=lambda n: (n['y1'], n['x1']))
     if not nodes:
         return _group('stack', [])
     if len(nodes) == 1:
         return nodes[0]
+    if prefer_rows:
+        paired = _panel_list_rows(nodes)
+        if paired is not None:
+            return paired
     if depth >= 12:
         return _group('stack', nodes, reason='Recursion limit; geometry retained.')
 
@@ -220,6 +327,21 @@ def _spatial_tree(nodes, depth=0):
         classes = [n.get('component', {}).get('class') for n in children]
         role = 'button-group' if all(c == 'Button' for c in classes) else 'row'
         return _group('row', children, role=role)
+
+    # A shallow, spanning first row is independent of columns underneath.
+    # Detect it before a full-height gutter can split navigation into the body.
+    bands = _axis_groups(nodes, 'y')
+    if len(bands) > 1 and len(bands[0]) >= 3:
+        header = bands[0]
+        head_bounds, bounds = _bounds(header), _bounds(nodes)
+        head_overlap = min(n['y2'] for n in header)-max(n['y1'] for n in header)
+        if (len(_axis_groups(header, 'x')) == len(header)
+                and head_overlap >= .35*min(n['y2']-n['y1'] for n in header)
+                and head_bounds['x2']-head_bounds['x1'] >= .75*(bounds['x2']-bounds['x1'])
+                and head_bounds['y2']-head_bounds['y1'] <= .2*(bounds['y2']-bounds['y1'])):
+            body = [n for band in bands[1:] for n in band]
+            return _group('stack', [_spatial_tree(header, depth+1),
+                                    _spatial_tree(body, depth+1)])
 
     columns = _column_groups(nodes)
     if columns:
@@ -274,6 +396,47 @@ def _table_groups(leaves):
         if len(words) < 6:
             continue
         height = median(max(1, o['y2']-o['y1']) for o in words.values())
+        # Large erroneous table boxes can cover the toolbar. Tight cell-sized
+        # detections provide a stronger vertical boundary than their union.
+        cell_evidence = [n for n in members
+                         if n['component']['class'] in {'Table head', 'Table data'}
+                         and n['y2']-n['y1'] <= height*2.5
+                         and n['x2']-n['x1'] <= (bounds['x2']-bounds['x1'])*.45]
+        # Separate distant compact-cell bands before trusting the union of
+        # broad table predictions. A false box may bridge unrelated sections.
+        evidence_bands = []
+        for n in sorted(cell_evidence, key=lambda n: n['y1']):
+            if not evidence_bands or n['y1'] > max(
+                    p['y2'] for p in evidence_bands[-1])+height*3:
+                evidence_bands.append([n])
+            else:
+                evidence_bands[-1].append(n)
+        supported = [band for band in evidence_bands if len(band) >= 6
+                     and max(n['y2'] for n in band)-min(n['y1'] for n in band) > height*3]
+        # Multiple plausible tables in one cluster need separate evidence;
+        # do not silently choose one and consume the others.
+        if len(supported) > 1:
+            continue
+        evidence = supported[0] if supported else cell_evidence
+        outside_words = []
+        recovered_boundary = False
+        if len(evidence) >= 6:
+            top = min(n['y1'] for n in evidence)-height*.25
+            bottom = max(n['y2'] for n in evidence)+height*.25
+            recovered_boundary = any(not top <= (o['y1']+o['y2'])/2 <= bottom
+                                     for n in group for o in n['component'].get('ocr', []))
+            bounds = {**bounds, 'y1': max(bounds['y1'], top),
+                      'y2': min(bounds['y2'], bottom)}
+            members = [n for n in members if n in group or
+                       (n['y1'] >= bounds['y1']-height*.25
+                        and n['y2'] <= bounds['y2']+height*.25)]
+            # Split OCR ownership at the boundary instead of either swallowing
+            # outside text or abandoning table reconstruction entirely.
+            all_words = {o['ocr_id']: o for n in members
+                         for o in n['component'].get('ocr', [])}
+            words = {i: o for i, o in all_words.items()
+                     if bounds['y1'] <= (o['y1']+o['y2'])/2 <= bounds['y2']}
+            outside_words = [o for i, o in all_words.items() if i not in words]
         rows = []
         for o in sorted(words.values(), key=lambda o: ((o['y1']+o['y2'])/2, o['x1'])):
             cy = (o['y1']+o['y2'])/2
@@ -297,11 +460,13 @@ def _table_groups(leaves):
                 else:
                     match.append((row_index, o))
         anchors.sort(key=lambda a: median(p['x1'] for _, p in a))
-        # A split OCR phrase must not create a one-row column inside an
+        # Split OCR phrases must not create extra columns inside an
         # established column's text extent (for example a split personal name).
         consolidated = []
         for anchor in anchors:
-            if (consolidated and len({i for i, _ in anchor}) == 1
+            if (consolidated and 0 not in {i for i, _ in anchor}
+                    and {i for i, _ in anchor}.issubset(
+                        {i for i, _ in consolidated[-1]})
                     and len({i for i, _ in consolidated[-1]}) >= 3
                     and min(p['x1'] for _, p in anchor)
                         <= max(p['x2'] for _, p in consolidated[-1])+height*.3):
@@ -312,6 +477,28 @@ def _table_groups(leaves):
         repeated = [a for a in anchors if len({i for i, _ in a}) >= 3]
         if len(repeated) < 2:
             continue
+        # When recovering a contaminated region, a separated first row can
+        # define column slots even when headings are centred and body text is
+        # left-aligned. Require repeated body support; never inspect wording.
+        if recovered_boundary:
+            first = sorted(rows[0], key=lambda o: o['x1'])
+            if len(first) >= 3 and all(b['x1']-a['x2'] > height*.6
+                                      for a, b in zip(first, first[1:])):
+                centers = [(o['x1']+o['x2'])/2 for o in first]
+                slots = [bounds['x1']] + [(a+b)/2 for a, b in zip(centers, centers[1:])] + [bounds['x2']]
+                proposed = [[] for _ in first]
+                for row_index, row in enumerate(rows):
+                    for o in row:
+                        cx = (o['x1']+o['x2'])/2
+                        col = next((i for i in range(len(first))
+                                    if slots[i] <= cx <= slots[i+1]), None)
+                        if col is not None:
+                            proposed[col].append((row_index, o))
+                supported_cols = sum(len({i for i, _ in col if i > 0}) >= 2
+                                     for col in proposed)
+                if (supported_cols >= max(2, len(first)//2)
+                        and sum(map(len, proposed)) == len(words)):
+                    anchors = proposed
         # Keep sparse edge columns (for example a header whose row IDs OCR missed).
         starts = [median(p['x1'] for _, p in a) for a in anchors]
         edges = [bounds['x1']] + [
@@ -350,6 +537,31 @@ def _table_groups(leaves):
                       role='table', column_edges=edges, index=group[0]['index'],
                       source_indices=[n['index'] for n in members])
         node.update(bounds)
+        # OCR from an oversized consumed prediction still belongs to the
+        # page. Rebuild those runs at their own boxes, outside the table.
+        for o in outside_words:
+            c = {**{k: o[k] for k in ('x1', 'y1', 'x2', 'y2')},
+                 'id': f"table-outside-{o['ocr_id']}", 'class': 'Paragraph',
+                 'texts': [o['text']], 'ocr': [o], 'source': 'table-boundary-recovery'}
+            # A short, prominent caption to the left of a toolbar belongs
+            # to the following table section, not to its first data row.
+            # Require both an input and a button on its baseline; this avoids
+            # promoting ordinary prose or individual table cells.
+            h = max(1, o['y2']-o['y1'])
+            toolbar = [n for n in leaves
+                       if n['component']['class'] in CONTROL_CLASSES | {'Button'}
+                       and n['x1'] > o['x2']
+                       and abs((n['y1']+n['y2']-o['y1']-o['y2'])/2)
+                           <= .6*max(h, n['y2']-n['y1'])
+                       and n['y2'] <= bounds['y1'] + height*.25]
+            classes = {n['component']['class'] for n in toolbar}
+            if (o['y2'] <= bounds['y1'] and bounds['y1']-o['y2'] <= height*3
+                    and h >= height*1.2 and len(o['text'].split()) <= 8
+                    and 'Button' in classes and 'Textbox' in classes):
+                c['class'] = 'Subheading'
+                c['corrections'] = ['Prominent caption beside table toolbar controls.']
+            tables.append(dict(kind='component', component=c,
+                               **{k: c[k] for k in ('x1', 'y1', 'x2', 'y2')}))
         tables.append(node)
         consumed.update(n['index'] for n in members)
     return tables, consumed
@@ -396,7 +608,7 @@ def _hierarchy(components):
         children = [expand(child, depth+1) for i, child in enumerate(grouped)
                     if parents.get(i) == node['index']]
         return {**node, 'kind': 'container',
-                'children': [_spatial_tree(children)],
+                'children': [_spatial_tree(children, prefer_rows=node['component']['class'] == 'Panel')],
                 'container_class': node['component']['class']}
 
     roots = [expand(node) for index, node in enumerate(grouped) if index not in parents]

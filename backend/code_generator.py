@@ -191,6 +191,24 @@ def render_layout_tree(node, scale):
     if not children:
         return '<div />'
 
+    # A branding element followed by multiple links is a navigation group.
+    # Link count alone is insufficient: inline policy/account links stay prose.
+    navigation = (kind == 'row' and len(children) >= 3
+                  and all(c.get('kind') == 'component' for c in children)
+                  and children[0]['component'].get('class') in {'Heading', 'Subheading'}
+                  and sum(c['component'].get('class') == 'Link' for c in children[1:]) >= 2
+                  and all(c['component'].get('class') in {'Link', 'Button'} for c in children[1:]))
+    if navigation:
+        brand = render_layout_tree(children[0], scale)
+        links = ''.join('<div className="shrink-0">' + render_layout_tree(c, scale) + '</div>'
+                        for c in children[1:])
+        return ('<header data-layout-kind="navigation" className="flex flex-wrap items-center '
+                'justify-between gap-x-8 gap-y-4 border-b border-[var(--s2c-border)] pb-4 mb-4">'
+                '<div className="shrink-0 max-w-full break-normal [&>h1]:text-2xl '
+                '[&>h2]:text-2xl [&>h1]:font-bold [&>h2]:font-bold">' + brand + '</div>'
+                '<nav aria-label="Main navigation" className="flex flex-wrap items-center '
+                'justify-end gap-x-6 gap-y-3">' + links + '</nav></header>')
+
     if kind == 'row' and _is_inline_text_row(children):
         # Ink widths are not text container widths. Inline flow lets sentences
         # wrap naturally while keeping each link and choice interactive.
@@ -205,7 +223,15 @@ def render_layout_tree(node, scale):
         gaps = [max(0, b['x1']-a['x2']) for a, b in zip(children, children[1:])]
         gap = min(64, max(8, round(sum(gaps)/max(1, len(gaps))*scale)))
         classes = 'grid min-w-0 items-start gap-3 '
-        if kind == 'columns':
+        card_row = kind == 'row' and len(children) >= 2 and all(
+            child.get('kind') == 'container' and child.get('role') != 'table'
+            and child.get('container_class') in {'Card', 'Panel', 'Section'}
+            for child in children)
+        if card_row:
+            # Preserve inferred proportions on desktop; use readable card widths
+            # on smaller viewports. The card count comes from the layout tree.
+            classes += 's2c-card-row grid-cols-1 sm:grid-cols-2 lg:grid-cols-[var(--s2c-tracks)] items-stretch'
+        elif kind == 'columns':
             classes += 'grid-cols-1 md:grid-cols-[var(--s2c-tracks)]'
         else:
             classes += 's2c-tree-row grid-cols-[var(--s2c-tracks)] items-center'
@@ -215,7 +241,10 @@ def render_layout_tree(node, scale):
             # Preserve vertical offsets on desktop; remove them when columns stack.
             offset = round(max(0, child['y1']-node['y1'])*scale) if kind == 'columns' else 0
             child_style = js({'--s2c-offset': f'{offset}px'})
-            parts.append(f'<div className="min-w-0 md:pt-[var(--s2c-offset)]" style={{{child_style}}}>')
+            wrapper = 'min-w-0 md:pt-[var(--s2c-offset)]'
+            if card_row:
+                wrapper += ' flex flex-col [&>section]:h-full'
+            parts.append(f'<div className="{wrapper}" style={{{child_style}}}>')
             parts.append(render_layout_tree(child, scale))
             parts.append('</div>')
         parts.append('</div>')
@@ -231,7 +260,12 @@ def render_layout_tree(node, scale):
         left = max(0, (child['x1']-node['x1'])/width*100)
         child_width = min(100-left, max(1, (child['x2']-child['x1'])/width*100))
         # OCR heading widths describe ink, not a restrictive text container.
-        if child.get('component', {}).get('class') in {'Heading', 'Subheading'}:
+        text_kind = child.get('component', {}).get('class')
+        if text_kind in {'Heading', 'Subheading'}:
+            child_width = 100-left
+        elif text_kind == 'Paragraph' and child_width >= 60:
+            # Long prose uses the available width in its existing parent.
+            # Narrow counters/captions and all controls retain their geometry.
             child_width = 100-left
         style = js({'marginTop': gap, '--s2c-left': f'{left:.3f}%',
                     '--s2c-width': f'{child_width:.3f}%'})
@@ -260,8 +294,25 @@ def generate_react_code(layout, theme='light'):
 
     def render_rows(region):
         nonlocal lines
+        region_items = [c for r in region.get('rows', []) for c in r['components']]
+        region_left = min((c['x1'] for c in region_items), default=0)
+        region_right = max((c['x2'] for c in region_items), default=1)
         for row in region.get('rows', []):
             gap = round(min(64, row.get('gap_before', 16)*scale))
+            children = [dict(kind='component', component=c,
+                             **{k: c[k] for k in ('x1', 'y1', 'x2', 'y2')})
+                        for c in row['components']]
+            if _is_inline_text_row(children):
+                # Nearby prose and its link are one sentence, including in the
+                # established single-column renderer used by simple forms.
+                left = min(c['x1'] for c in children)
+                right = max(c['x2'] for c in children)
+                centered = abs((left+right-region_left-region_right)/2) < .07*max(1, region_right-region_left)
+                align = 'center' if centered else 'left'
+                node = dict(kind='row', children=children)
+                lines.append('<div style={' + js({'marginTop': gap, 'textAlign': align}) + '}>'
+                             + render_layout_tree(node, scale) + '</div>')
+                continue
             lines.append(f'        <div className="sketch-row" style={{{{marginTop: {gap}}}}}>')
             for c in row['components']:
                 start, span = c.get('grid_start', 1), c.get('grid_span', 24)
