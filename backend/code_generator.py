@@ -65,13 +65,26 @@ def generate_component(c):
     if kind == 'Heading':
         return f'<h1 className="text-3xl sm:text-4xl font-bold text-[var(--s2c-text)]" style={{{{textAlign: {js(align)}}}}}>{value}</h1>'
     if kind == 'Subheading':
-        return f'<h2 className="text-lg text-[var(--s2c-muted)]" style={{{{textAlign: {js(align)}}}}}>{value}</h2>'
+        return f'<h2 className="text-lg font-semibold text-[var(--s2c-text)]" style={{{{textAlign: {js(align)}}}}}>{value}</h2>'
     if kind == 'Paragraph':
         return f'<p className="text-sm text-[var(--s2c-muted)]" style={{{{textAlign: {js(align)}}}}}>{value}</p>'
     if kind == 'Label':
         return f'<label htmlFor={{{js(c.get("for_id", ""))}}} className="block text-sm font-medium text-[var(--s2c-text)]">{value}</label>'
     if kind in {'Textbox', 'Password box'}:
         input_type = 'password' if kind == 'Password box' else c.get('input_type', 'text')
+        is_search = kind == 'Textbox' and (input_type == 'search' or (
+            input_type == 'text' and re.match(r'^search\b', text, re.IGNORECASE)))
+        if is_search:
+            return ('<div className="relative w-full min-w-0">'
+                    '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" '
+                    'fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" '
+                    'className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--s2c-muted)]">'
+                    '<circle cx={10.5} cy={10.5} r={6.5} /><path d="m16 16 4 4" /></svg>'
+                    f'<input id={ident} type="search" placeholder={value} '
+                    f'aria-label={{{js(c.get("label") or text or "Search")}}} '
+                    'className="w-full min-w-0 rounded-lg border border-[var(--s2c-border)] '
+                    'bg-[var(--s2c-surface)] py-3 pl-10 pr-4 text-[var(--s2c-text)] '
+                    f'placeholder:text-[var(--s2c-muted)] {focus}" /></div>')
         return f'<input id={ident} type="{input_type}" placeholder={value} aria-label={{{js(c.get("label") or text or "Text input")}}} className="w-full min-w-0 border border-[var(--s2c-border)] rounded-lg px-4 py-3 bg-[var(--s2c-surface)] placeholder:text-[var(--s2c-muted)] {focus}" />'
     if kind == 'Button' and c.get('filled'):
         return f'<button type="button" className="w-full rounded-lg bg-[var(--s2c-accent)] text-[var(--s2c-on-accent)] px-4 py-3 font-medium hover:bg-[var(--s2c-accent-hover)] transition-colors {focus}">{value}</button>'
@@ -89,6 +102,11 @@ def generate_component(c):
     if kind in {'Image', 'Carousel'}:
         src = image_source(c)
         if src:
+            display_width = c.get('display_width')
+            if isinstance(display_width, (int, float)) and 0 < display_width <= 1200:
+                return (f'<img src={{{js(src)}}} alt={{{js(c.get("alt") or text or "Wireframe image region")}}} '
+                        'className="block h-auto max-w-full object-contain" '
+                        'style={' + js({'width': round(display_width)}) + '} loading="lazy" />')
             return f'<img src={{{js(src)}}} alt={{{js(c.get("alt") or text or "Wireframe image region")}}} className="block w-full h-auto object-contain rounded-lg" loading="lazy" />'
         return f'<div role="img" aria-label={{{js(text or kind)}}} className="min-h-24 border border-dashed border-[var(--s2c-border)] rounded-lg flex items-center justify-center text-[var(--s2c-muted)]">{value if text else kind}</div>'
     return f'<div className="border border-dashed border-[var(--s2c-border)] p-2 text-sm text-[var(--s2c-muted)]">{value if text else "{"+js(kind)+"}"}</div>'
@@ -171,6 +189,149 @@ def render_table(node):
     return '\n'.join(parts)
 
 
+def _render_text_card(node, scale):
+    """Render a simple caption/description card without OCR ink-width columns.
+
+    One image above the caption can share this flow. Mixed controls, nested
+    containers and multi-column cards keep the normal hierarchy renderer.
+    """
+    def flatten(part):
+        if part.get('kind') == 'component':
+            return [part]
+        if part.get('kind') != 'stack':
+            return None
+        result = []
+        for child in part.get('children', []):
+            items = flatten(child)
+            if items is None:
+                return None
+            result.extend(items)
+        return result
+    items = []
+    for child in node.get('children', []):
+        group = flatten(child)
+        if group is None:
+            return None
+        items.extend(group)
+    if not items or any(p['component'].get('class') not in
+                        {'Paragraph', 'Heading', 'Subheading', 'Image'} for p in items):
+        return None
+    items.sort(key=lambda p: (p['y1'], p['x1']))
+    headings = [i for i, p in enumerate(items)
+                if p['component']['class'] in {'Heading', 'Subheading'}]
+    if len(headings) != 1:
+        return None
+    index = headings[0]
+    title, before, after = items[index], items[:index], items[index+1:]
+    pictures = [p for p in items if p['component']['class'] == 'Image']
+    if (len(pictures) > 1 or any(p not in before or p['y2'] > title['y1']
+                                or not image_source(p['component']) for p in pictures)):
+        return None
+    if len(after) < 2 or any(p['y1'] < title['y1'] for p in after):
+        return None
+    width = max(1, node['x2']-node['x1'])
+    centered = all(abs((p['x1']+p['x2']-node['x1']-node['x2'])/2)
+                   <= width*.15 for p in items)
+    align = 'center' if centered else 'left'
+    # Retain the sketch's space above the caption, even when an icon was
+    # missed. Any existing OCR in that region remains visible for inspection.
+    leading = max(0, min(96, round((title['y1']-node['y1'])*scale)-24))
+    prefix = ''.join(generate_component({**p['component'], 'align': align}) for p in before)
+    heading = generate_component({**title['component'], 'align': align})
+    if pictures:
+        prefix_parts = []
+        for part in before:
+            if part['component']['class'] == 'Image':
+                # The original crop is embedded in JSX, so preview and export
+                # use the same asset. Bound its display size, not its pixels.
+                size = max(48, min(96, round((part['x2']-part['x1'])*scale)))
+                margin = 'mx-auto ' if centered else ''
+                prefix_parts.append('<div className="' + margin
+                                    + 'mb-4 max-w-full" style={' + js({'width': size}) + '}>'
+                                    + generate_component(part['component']) + '</div>')
+            else:
+                prefix_parts.append(generate_component({**part['component'], 'align': align}))
+        prefix = ''.join(prefix_parts)
+        # Reserve two caption lines so descriptions in neighbouring cards do
+        # not jump upward when one caption fits on a single line.
+        heading = '<div className="min-h-14">' + heading + '</div>'
+    description = ' '.join(t for p in after for t in p['component'].get('texts', []))
+    return ('<section data-layout-kind="text-card" className="min-w-0 rounded-xl border '
+            'border-[var(--s2c-border)] bg-[var(--s2c-surface)] p-6 shadow-sm" '
+            'style={' + js({'textAlign': align}) + '}>'
+            '<div className="flex flex-col justify-start" style={' +
+            js({'minHeight': leading}) + '}>' + prefix + '</div>'
+            + heading
+            + '<p className="mt-2 text-sm leading-6 text-[var(--s2c-muted)]">{'
+            + js(description) + '}</p></section>')
+
+
+def _render_stat_card(node, scale):
+    """Keep a numeric value and its caption together beside an optional image."""
+    def leaves(part):
+        if part.get('kind') == 'component':
+            return [part]
+        if part.get('kind') not in {'stack', 'row', 'columns'}:
+            return None
+        result = []
+        for child in part.get('children', []):
+            group = leaves(child)
+            if group is None:
+                return None
+            result.extend(group)
+        return result
+    items = []
+    for child in node.get('children', []):
+        group = leaves(child)
+        if group is None:
+            return None
+        items.extend(group)
+    images = [p for p in items if p['component'].get('class') == 'Image']
+    text = sorted([p for p in items if p['component'].get('class') in
+                   {'Heading', 'Subheading', 'Paragraph'}], key=lambda p: p['y1'])
+    if len(text) != 2 or len(images) > 1 or len(items) != len(text)+len(images):
+        return None
+    number, caption = text
+    value = ' '.join(number['component'].get('texts', [])).strip()
+    label = ' '.join(caption['component'].get('texts', [])).strip()
+    width = max(1, node['x2']-node['x1'])
+    if (not re.fullmatch(r'[0-9]+(?:[.,][0-9]+)*%?', value)
+            or not any(ch.isalpha() for ch in label)
+            or caption['y1'] <= number['y1']
+            or abs(number['x1']-caption['x1']) > width*.2):
+        return None
+    artwork = ''
+    if images:
+        picture = images[0]
+        if picture['x2'] > min(number['x1'], caption['x1'])+width*.08:
+            return None
+        size = max(48, min(96, round((picture['x2']-picture['x1'])*scale)))
+        artwork = ('<div className="shrink-0" style={' + js({'width': size}) + '}>'
+                   + generate_component(picture['component']) + '</div>')
+    return ('<section data-layout-kind="stat-card" className="flex min-w-0 min-h-36 '
+            'items-center gap-4 rounded-xl border border-[var(--s2c-border)] '
+            'bg-[var(--s2c-surface)] p-6 shadow-sm">' + artwork
+            + '<div className="min-w-0"><p className="text-3xl font-semibold '
+            'leading-tight tabular-nums text-[var(--s2c-text)]">{' + js(value) + '}</p>'
+            '<p className="mt-2 text-sm leading-6 text-[var(--s2c-muted)]">{'
+            + js(label) + '}</p></div></section>')
+
+
+def _centered_title_group(child, parent):
+    """Identify an already-grouped title/subtitle centred over a wider section."""
+    parts = child.get('children', [])
+    if (child.get('kind') != 'stack' or len(parts) != 2
+            or any(p.get('kind') != 'component' for p in parts)
+            or parts[0]['component'].get('class') not in {'Heading', 'Subheading'}
+            or parts[1]['component'].get('class') != 'Paragraph'):
+        return False
+    width = max(1, parent['x2']-parent['x1'])
+    centre = (parent['x1']+parent['x2'])/2
+    return (child['x2']-child['x1'] < width*.7
+            and all(abs((p['x1']+p['x2'])/2-centre) < width*.08 for p in parts)
+            and parts[1]['y1'] >= parts[0]['y1'])
+
+
 def render_layout_tree(node, scale):
     """Render geometric groups in normal flow; never position controls absolutely."""
     kind = node.get('kind', 'stack')
@@ -183,6 +344,13 @@ def render_layout_tree(node, scale):
     if node.get('role') == 'table':
         return render_table(node)
     if kind == 'container':
+        if node.get('container_class') == 'Card':
+            card = _render_stat_card(node, scale)
+            if card is not None:
+                return card
+            card = _render_text_card(node, scale)
+            if card is not None:
+                return card
         # A container is represented once, with its actual descendants inside.
         caption = ' '.join(node.get('component', {}).get('texts', [])).strip()
         heading = ('<p className="mb-3 font-semibold">{' + js(caption) + '}</p>') if caption else ''
@@ -257,11 +425,24 @@ def render_layout_tree(node, scale):
     for child in children:
         gap = round(min(64, max(0, child['y1']-bottom)*scale))
         bottom = max(bottom, child['y2'])
+        if _centered_title_group(child, node):
+            title, subtitle = child['children']
+            parts.append('<div data-layout-kind="section-intro" className="w-full '
+                         'space-y-2 pb-4 text-center" style={' + js({'marginTop': gap}) + '}>'
+                         + generate_component({**title['component'], 'align': 'center'})
+                         + generate_component({**subtitle['component'], 'align': 'center'})
+                         + '</div>')
+            continue
         left = max(0, (child['x1']-node['x1'])/width*100)
         child_width = min(100-left, max(1, (child['x2']-child['x1'])/width*100))
         # OCR heading widths describe ink, not a restrictive text container.
         text_kind = child.get('component', {}).get('class')
         if text_kind in {'Heading', 'Subheading'}:
+            centered = (child.get('component', {}).get('align') == 'center'
+                        and abs((child['x1']+child['x2']-node['x1']-node['x2'])/2)
+                            <= width*.12)
+            if centered:
+                left = 0
             child_width = 100-left
         elif text_kind == 'Paragraph' and child_width >= 60:
             # Long prose uses the available width in its existing parent.
@@ -297,8 +478,16 @@ def generate_react_code(layout, theme='light'):
         region_items = [c for r in region.get('rows', []) for c in r['components']]
         region_left = min((c['x1'] for c in region_items), default=0)
         region_right = max((c['x2'] for c in region_items), default=1)
+        previous = []
         for row in region.get('rows', []):
             gap = round(min(64, row.get('gap_before', 16)*scale))
+            # OCR ink boxes can touch or overlap although a heading and its
+            # supporting line still need a small readable gap in normal flow.
+            if (len(previous) == 1 and previous[0].get('class') == 'Heading'
+                    and len(row['components']) == 1
+                    and row['components'][0].get('class') == 'Paragraph'):
+                gap = max(8, gap)
+            previous = row['components']
             children = [dict(kind='component', component=c,
                              **{k: c[k] for k in ('x1', 'y1', 'x2', 'y2')})
                         for c in row['components']]

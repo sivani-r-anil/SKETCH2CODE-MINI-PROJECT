@@ -306,8 +306,57 @@ def _panel_list_rows(nodes):
     return _group('stack', children, role='list')
 
 
+def _content_titles(nodes, card=False):
+    """Recover local text hierarchy after OCR fragments have been joined.
+
+    Restrict this to caption/description cards (optionally with artwork above
+    the caption), or a caption immediately above a repeated card row.
+    """
+    lines = _join_text_runs(nodes)
+    text = [n for n in lines if n.get('kind') == 'component'
+            and n.get('component', {}).get('class') in
+                {'Paragraph', 'Heading', 'Subheading'}]
+    artwork = [n for n in lines if n.get('kind') == 'component'
+               and n.get('component', {}).get('class') == 'Image']
+    if card and len(text)+len(artwork) == len(lines) and len(text) >= 3:
+        captions = [n for n in text if any(ch.isalpha() for ch in
+                    ' '.join(n['component'].get('texts', [])))]
+        captions.sort(key=lambda n: n['y1'])
+        if len(captions) >= 3:
+            title, body = captions[0], captions[1:]
+            h = title['y2']-title['y1']
+            body_height = median(n['y2']-n['y1'] for n in body)
+            if (all(n['y2'] <= title['y1'] for n in artwork)
+                    and title['component']['class'] == 'Paragraph'
+                    and h >= body_height*1.12
+                    and len(' '.join(title['component'].get('texts', [])).split()) <= 8
+                    and all(n['y1'] >= title['y1']+h*.6 for n in body)):
+                title['component'] = {**title['component'], 'class': 'Subheading',
+                    'corrections': title['component'].get('corrections', []) +
+                        ['Larger leading caption above card description lines.']}
+    cards = [n for n in lines if n.get('kind') == 'container'
+             and n.get('container_class') == 'Card']
+    if len(cards) >= 3:
+        h = median(n['y2']-n['y1'] for n in cards)
+        top = min(n['y1'] for n in cards)
+        if max(n['y1'] for n in cards)-top <= h*.15:
+            left, right = min(n['x1'] for n in cards), max(n['x2'] for n in cards)
+            above = [n for n in text if n['y2'] <= top and top-n['y2'] < h*.7
+                     and abs((n['x1']+n['x2']-left-right)/2) < (right-left)*.12]
+            above.sort(key=lambda n: n['y1'])
+            if len(above) == 2:
+                title, subtitle = above
+                if (title['component']['class'] == 'Paragraph'
+                        and title['y2']-title['y1'] >=
+                            (subtitle['y2']-subtitle['y1'])*1.35):
+                    title['component'] = {**title['component'], 'class': 'Subheading',
+                        'corrections': title['component'].get('corrections', []) +
+                            ['Larger centered caption above repeated cards.']}
+    return lines
+
+
 def _spatial_tree(nodes, depth=0, prefer_rows=False):
-    nodes = sorted(_join_text_runs(nodes), key=lambda n: (n['y1'], n['x1']))
+    nodes = sorted(_content_titles(nodes), key=lambda n: (n['y1'], n['x1']))
     if not nodes:
         return _group('stack', [])
     if len(nodes) == 1:
@@ -607,6 +656,8 @@ def _hierarchy(components):
             return node
         children = [expand(child, depth+1) for i, child in enumerate(grouped)
                     if parents.get(i) == node['index']]
+        if node['component']['class'] == 'Card':
+            children = _content_titles(children, card=True)
         return {**node, 'kind': 'container',
                 'children': [_spatial_tree(children, prefer_rows=node['component']['class'] == 'Panel')],
                 'container_class': node['component']['class']}

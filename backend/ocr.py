@@ -98,7 +98,112 @@ def extract_text_with_links(image_path):
             saturated = (hsv[:,:,1] > 110) & (hsv[:,:,2] > 60)
             if visible.sum() > 0 and (saturated & visible).sum()/visible.sum() > .6 and saturated.mean() < .35:
                 item['coloured_text'] = True
+    refined.extend(recover_grid_numbers(image, refined))
     return raw, refined
+
+
+def recover_grid_numbers(image, existing):
+    """Retry missed numeric text in ruled tables, without inventing sequences.
+
+    Long intersecting lines establish cells. At least two recognised numeric
+    cells establish a numeric column. Only otherwise empty cells with compact
+    ink are reread. The raw full-image OCR remains unchanged for auditing.
+    """
+    import cv2
+    import numpy as np
+    import re
+    heights = [max(p[1] for p in o['box'])-min(p[1] for p in o['box'])
+               for o in existing]
+    heights = [h for h in heights if h > 0]
+    if not heights:
+        return []
+    unit = float(np.median(heights))
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    _, ink = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    horizontal = cv2.morphologyEx(ink, cv2.MORPH_OPEN,
+                                 np.ones((1, max(15, round(unit*4))), np.uint8))
+    vertical = cv2.morphologyEx(ink, cv2.MORPH_OPEN,
+                               np.ones((max(15, round(unit*4)), 1), np.uint8))
+    grid = cv2.bitwise_or(horizontal, vertical)
+    # Bridge small pen gaps, while keeping neighbouring cell interiors apart.
+    gap = max(2, round(unit*.12))
+    grid = cv2.morphologyEx(grid, cv2.MORPH_CLOSE, np.ones((gap, gap), np.uint8))
+    contours, _ = cv2.findContours(grid, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    cells = []
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        if (1.2*unit <= w <= 18*unit and 1.2*unit <= h <= 5*unit
+                and cv2.contourArea(contour) >= w*h*.8):
+            cells.append((x, y, w, h))
+    # A row must contain at least three aligned cell interiors. This excludes
+    # isolated inputs, cards and most pagination/button outlines.
+    cells = [c for c in cells if sum(
+        abs(d[1]-c[1]) < unit*.3 and abs(d[3]-c[3]) < unit*.3
+        for d in cells) >= 3]
+    columns = []
+    for cell in sorted(cells):
+        group = next((g for g in columns if abs(g[0][0]-cell[0]) < unit*.3
+                      and abs(g[0][2]-cell[2]) < unit*.3), None)
+        if group is None:
+            columns.append([cell])
+        else:
+            group.append(cell)
+
+    def content(cell):
+        x, y, w, h = cell
+        return [o for o in existing if x <= sum(p[0] for p in o['box'])/4 <= x+w
+                and y <= sum(p[1] for p in o['box'])/4 <= y+h]
+
+    additions, attempts = [], 0
+    numeric = re.compile(r'[0-9]+(?:[.,][0-9]+)*')
+    for column in columns:
+        if len(column) < 3 or sum(len(content(c)) == 1 and bool(
+                numeric.fullmatch(content(c)[0]['text'].strip())) for c in column) < 2:
+            continue
+        for x, y, w, h in sorted(column, key=lambda c: c[1]):
+            if content((x, y, w, h)) or attempts >= 24:
+                continue
+            pad = max(3, round(unit*.18))
+            left, top = x+pad, y+pad
+            region = ink[top:y+h-pad, left:x+w-pad]
+            if not region.size:
+                continue
+            _, _, stats, _ = cv2.connectedComponentsWithStats(region)
+            marks = [r for r in stats[1:] if r[4] >= max(3, unit*unit*.012)]
+            if not marks or len(marks) > 8:
+                continue
+            a = min(r[0] for r in marks); b = min(r[1] for r in marks)
+            c = max(r[0]+r[2] for r in marks); d = max(r[1]+r[3] for r in marks)
+            # Reject border fragments, wide illustrations and tiny dust marks.
+            if not (.35*unit <= d-b <= 1.8*unit and c-a <= 6*unit
+                    and a > 0 and b > 0 and c < region.shape[1] and d < region.shape[0]):
+                continue
+            attempts += 1
+            crop = image[top+b:top+d, left+a:left+c]
+            readings = []
+            for factor in (3, 4):
+                enlarged = cv2.resize(crop, None, fx=factor, fy=factor,
+                                      interpolation=cv2.INTER_CUBIC)
+                border = max(8, round(unit*.3*factor))
+                enlarged = cv2.copyMakeBorder(enlarged, border, border, border, border,
+                                             cv2.BORDER_CONSTANT, value=(255, 255, 255))
+                # Use EasyOCR's recogniser on the bounded crop directly: its
+                # full-page text detector is what can miss isolated small glyphs.
+                result = get_reader().recognize(enlarged, detail=1, paragraph=False)
+                if len(result) != 1:
+                    break
+                _, text, confidence = result[0]
+                text = text.strip()
+                if not numeric.fullmatch(text) or float(confidence) < .70:
+                    break
+                readings.append((text, float(confidence)))
+            if len(readings) == 2 and readings[0][0] == readings[1][0]:
+                additions.append({'text': readings[0][0],
+                                  'confidence': round(min(r[1] for r in readings), 3),
+                                  'box': [[int(left+a), int(top+b)], [int(left+c), int(top+b)],
+                                          [int(left+c), int(top+d)], [int(left+a), int(top+d)]],
+                                  'source': 'ocr-grid-cell-retry'})
+    return additions
 
 
 def same_text(original, pieces):

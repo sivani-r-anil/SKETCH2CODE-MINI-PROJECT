@@ -80,7 +80,29 @@ def prepare_regions(detections, text_items, rectangles, markers):
             removed.add(i)
             # A larger first run is branding, not an inferred navigation link.
             brand = navigation_runs[0]['y2']-navigation_runs[0]['y1'] > navigation_height*1.3
-            nav_text_ids.update(o['ocr_id'] for o in navigation_runs[int(brand):])
+            links = navigation_runs[int(brand):]
+            # A trailing action can share the header baseline without being
+            # another navigation link. Require a distinct gap after several
+            # supported links; preserve explicit underline/link evidence.
+            def supported_link(o):
+                return (o.get('underlined') or o.get('link_hint') or any(
+                    d['class'] == 'Link' and (d.get('confidence') or 0) >= .4
+                    and intersection(d, o)/max(1, area(o)) >= .6
+                    for d in detections))
+            if len(links) >= 4:
+                trailing = links[-1]
+                normal_gaps = [b['x1']-a['x2'] for a, b in zip(links[:-2], links[1:-1])]
+                action_gap = trailing['x1']-links[-2]['x2']
+                if (not supported_link(trailing)
+                        and sum(bool(supported_link(o)) for o in links[:-1]) >= 3
+                        and action_gap > max(navigation_height*2, median(normal_gaps)*3)
+                        and trailing['x2']-trailing['x1'] <= navigation_height*6):
+                    regions.append({**text_box(trailing), 'class': 'Button',
+                                    'source': 'header-action-geometry',
+                                    'confidence': trailing.get('confidence', 0),
+                                    'corrections': ['Separated trailing header action after supported navigation links.']})
+                    links = links[:-1]
+            nav_text_ids.update(o['ocr_id'] for o in links)
             continue
         if outlined_navigation:
             removed.add(i)
@@ -164,7 +186,13 @@ def consolidate_repeated_cards(detections, text_items, containers):
         runs = [o for o in text_items if intersection(r, o)/max(1, area(o)) > .95]
         if len(runs) < 2 or not .8 < w/max(1, h) < 4:
             continue
-        if not matches and (len(runs) < 3 or any(
+        ordered_runs = sorted(runs, key=lambda o: o['y1'])
+        statistic = (len(ordered_runs) == 2
+                     and re.fullmatch(r'[0-9]+(?:[.,][0-9]+)*%?', ordered_runs[0]['text'].strip())
+                     and any(ch.isalpha() for ch in ordered_runs[1]['text'])
+                     and ordered_runs[1]['y1'] > ordered_runs[0]['y2']
+                     and abs(ordered_runs[0]['x1']-ordered_runs[1]['x1']) < h*.15)
+        if not matches and not statistic and (len(runs) < 3 or any(
                 c['class'] in INPUTS | {'Image', 'Check Box', 'Radio Button'}
                 and intersection(r, c)/max(1, area(c)) > .85 for c in regions)):
             continue
@@ -200,9 +228,30 @@ def consolidate_repeated_cards(detections, text_items, containers):
         # table-class fragments inside this independently supported card.
         regions = [c for c in regions if c is primary or not (
             any(c is duplicate for duplicate in matches[1:]) or
-            (c['class'] in {'Table', 'Table head', 'Table data', 'Table row'}
+            (c['class'] in {'Table', 'Table head', 'Table data', 'Table row', 'Carousel'}
              and area(c) <= area(r)*1.2
              and intersection(r, c)/max(1, area(c)) >= .85))]
+        # A compact, text-free box beside the two statistic text levels is
+        # retained as raster artwork rather than an empty input or button.
+        runs = sorted([o for o in text_items
+                       if intersection(r, o)/max(1, area(o)) > .95], key=lambda o: o['y1'])
+        if (len(runs) == 2 and re.fullmatch(r'[0-9]+(?:[.,][0-9]+)*%?', runs[0]['text'].strip())
+                and any(ch.isalpha() for ch in runs[1]['text'])):
+            icons = [c for c in regions if c is not primary
+                     and c['class'] in {'Button', 'Textbox', 'Image'}
+                     and intersection(r, c)/max(1, area(c)) > .95
+                     and .65 < (c['x2']-c['x1'])/max(1, c['y2']-c['y1']) < 1.5
+                     and .3 < (c['y2']-c['y1'])/(r['y2']-r['y1']) < .9
+                     and c['x2'] < min(o['x1'] for o in runs)
+                     and not any(intersection(c, o) > 0 for o in text_items)]
+            kept = []
+            for icon in sorted(icons, key=lambda c: c.get('confidence') or 0, reverse=True):
+                if any(intersection(icon, other)/max(1, min(area(icon), area(other))) > .8
+                       for other in kept):
+                    regions = [c for c in regions if c is not icon]
+                    continue
+                change_class(icon, 'Image', 'Text-free compact artwork beside statistic text in repeated cards.')
+                kept.append(icon)
     return regions
 
 
