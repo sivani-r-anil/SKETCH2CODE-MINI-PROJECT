@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from "react"
 import Editor from "@monaco-editor/react"
 import * as Babel from "@babel/standalone"
+import JSZip from "jszip"
+
+const THEMES = [
+  ["light", "Light"], ["dark", "Dark"], ["blue", "Blue"],
+  ["purple-gradient", "Purple Gradient"], ["ocean-gradient", "Ocean Gradient"],
+  ["sunset-gradient", "Sunset Gradient"],
+]
+const THEME_ATTRIBUTE = /data-sketch-theme\s*=\s*(["'])(light|dark|blue|purple-gradient|ocean-gradient|sunset-gradient)\1/
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
 const scriptLiteral = (value) => JSON.stringify(value).replace(/</g, "\\u003c")
@@ -10,8 +18,79 @@ function downloadFile(name, content, type) {
   const link = document.createElement("a")
   link.href = url
   link.download = name
+  document.body.appendChild(link)
   link.click()
-  URL.revokeObjectURL(url)
+  link.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+function projectFiles(editorCode) {
+  if (!editorCode.trim()) throw new Error("Generate or enter React code before exporting.")
+  // Validate the actual editor buffer. Never export the old backend response.
+  const parsed = Babel.transform(editorCode, {
+    presets: [["react", { runtime: "automatic" }]],
+    sourceType: "module", ast: true, code: false,
+  })
+  const supportedImports = new Set(["react", "react-dom", "react-dom/client", "react/jsx-runtime", "react/jsx-dev-runtime"])
+  let hasDefault = false
+  const globalsNeeded = new Set()
+  Babel.transform(editorCode, {
+    presets: [["react", { runtime: "classic" }]], sourceType: "module",
+    plugins: [() => ({ visitor: {
+      ImportDeclaration(path) {
+        if (!supportedImports.has(path.node.source.value)) {
+          throw new Error(`Export cannot bundle ${path.node.source.value}. Keep the component self-contained or remove this import.`)
+        }
+      },
+      ExportNamedDeclaration(path) {
+        if (path.node.source) throw new Error("Export cannot bundle re-exported external files.")
+        if (path.node.specifiers.some(item => item.exported?.name === "default")) hasDefault = true
+      },
+      ExportAllDeclaration() { throw new Error("Export cannot bundle external source files.") },
+      ExportDefaultDeclaration() { hasDefault = true },
+      ReferencedIdentifier(path) {
+        const name = path.node.name
+        if (["React", "useState", "useEffect", "useRef", "useMemo"].includes(name) && !path.scope.hasBinding(name)) globalsNeeded.add(name)
+      },
+      CallExpression(path) {
+        if (path.node.callee.type === "Import" || path.node.callee.name === "require") {
+          throw new Error("Dynamic imports and require() need additional project files and cannot be exported automatically.")
+        }
+      },
+    } })],
+  })
+  let appCode = editorCode
+  // The iframe supplies these React names globally. Supply equivalent imports
+  // in the standalone project without changing the user's component body.
+  if (globalsNeeded.size) {
+    const names = [...globalsNeeded].map(name => name === "React" ? "default as React" : name)
+    appCode = `import { ${names.join(", ")} } from "react"\n` + appCode
+  }
+  if (!hasDefault) {
+    const declarations = parsed.ast.program.body
+    const names = declarations.flatMap(node => node.type === "FunctionDeclaration" ? [node.id?.name]
+      : node.type === "VariableDeclaration" ? node.declarations.map(item => item.id.name) : [])
+    const entry = names.includes("GeneratedPage") ? "GeneratedPage" : names.includes("App") ? "App" : null
+    if (!entry) throw new Error("The component needs a default export, or a GeneratedPage/App declaration.")
+    appCode += `\nexport default ${entry};\n`
+  }
+  return {
+    "package.json": JSON.stringify({
+      name: "sketch2code-project", version: "1.0.0", private: true, type: "module",
+      scripts: { dev: "vite", build: "vite build", preview: "vite preview" },
+      dependencies: { react: "^19.2.8", "react-dom": "^19.2.8" },
+      devDependencies: { vite: "^8.2.2", "@vitejs/plugin-react": "^6.1.0", tailwindcss: "3.4.17", postcss: "^8.5.6", autoprefixer: "^10.4.21" },
+      engines: { node: "^20.19.0 || >=22.12.0" },
+    }, null, 2) + "\n",
+    "index.html": '<!doctype html>\n<html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Sketch2Code Project</title></head><body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body></html>\n',
+    "src/main.jsx": 'import React from "react"\nimport { createRoot } from "react-dom/client"\nimport App from "./App.jsx"\nimport "./index.css"\n\ncreateRoot(document.getElementById("root")).render(<App />)\n',
+    "src/App.jsx": appCode,
+    "src/index.css": '@tailwind base;\n@tailwind components;\n@tailwind utilities;\n\nbody { margin: 0; }\n',
+    "vite.config.js": 'import { defineConfig } from "vite"\nimport react from "@vitejs/plugin-react"\n\nexport default defineConfig({ plugins: [react()] })\n',
+    "tailwind.config.js": 'export default { content: ["./index.html", "./src/**/*.{js,jsx}"], theme: { extend: {} }, plugins: [] }\n',
+    "postcss.config.js": 'export default { plugins: { tailwindcss: {}, autoprefixer: {} } }\n',
+    "README.md": '# Generated Sketch2Code project\n\nUse Node.js 20.19+ or 22.12+. Run `npm install`, then `npm run dev`.\n\nThis project contains the editor code captured when Download ZIP was clicked, including its selected theme and embedded image crops. Tailwind is built locally; no Sketch2Code backend is required. External image URLs or APIs added manually still need their original services.\n',
+  }
 }
 
 function buildPreviewDocument(preview) {
@@ -101,6 +180,27 @@ function App() {
 
   const [generatedCode, setGeneratedCode] = useState("")
   const [editableCode, setEditableCode] = useState("")
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportMessage, setExportMessage] = useState("")
+
+  const exportProject = async () => {
+    const currentCode = editableCode
+    setIsExporting(true)
+    setExportMessage("")
+    try {
+      const files = projectFiles(currentCode)
+      const zip = new JSZip()
+      const folder = zip.folder("sketch2code-project")
+      Object.entries(files).forEach(([name, contents]) => folder.file(name, contents))
+      const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" })
+      downloadFile("sketch2code-project.zip", blob, "application/zip")
+      setExportMessage("ZIP created from the editor code at the time you clicked Download ZIP.")
+    } catch (error) {
+      setExportMessage(`Export failed: ${error.message}`)
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   const preview = useMemo(() => {
     try {
@@ -191,12 +291,13 @@ function App() {
 
   const previewDocument = useMemo(() => buildPreviewDocument(preview), [preview])
   const [previewWidth, setPreviewWidth] = useState("1280")
-  const selectedTheme = editableCode.match(/data-sketch-theme=["'](light|dark|blue)["']/)?.[1] || "light"
-  const canChangeTheme = /data-sketch-theme=["'](light|dark|blue)["']/.test(editableCode)
+  const selectedTheme = editableCode.match(THEME_ATTRIBUTE)?.[2] || "light"
+  const canChangeTheme = THEME_ATTRIBUTE.test(editableCode)
     && editableCode.includes("--s2c-page")
   const changeTheme = (theme) => {
     // Modify Monaco's current buffer, preserving user edits and layout.
-    setEditableCode(code => code.replace(/data-sketch-theme=["'](light|dark|blue)["']/, `data-sketch-theme="${theme}"`))
+    if (!THEMES.some(([value]) => value === theme)) return
+    setEditableCode(code => code.replace(THEME_ATTRIBUTE, `data-sketch-theme="${theme}"`))
   }
   const hasResults = Boolean(generatedCode)
 
@@ -372,8 +473,12 @@ function App() {
                     </p>
                   </div>
 
-                  <button className="text-xs bg-blue-50 text-blue-700 px-3 py-2 rounded-full" onClick={() => downloadFile("GeneratedPage.jsx", editableCode, "text/javascript")}>Download JSX</button>
+                  <div className="flex flex-wrap gap-2">
+                    <button className="text-xs bg-blue-50 text-blue-700 px-3 py-2 rounded-full" onClick={() => downloadFile("GeneratedPage.jsx", editableCode, "text/javascript")}>Download JSX</button>
+                    <button disabled={isExporting || !editableCode.trim() || Boolean(preview.error)} className="text-xs bg-blue-700 text-white px-3 py-2 rounded-full disabled:opacity-50" onClick={exportProject}>{isExporting ? "Creating ZIP…" : "Download ZIP"}</button>
+                  </div>
                 </div>
+                {exportMessage && <p role="status" className="px-5 py-2 text-sm text-slate-700">{exportMessage}</p>}
 
                 <Editor
                   height="520px"
@@ -406,7 +511,7 @@ function App() {
 
                   <div className="flex flex-wrap items-center gap-3 text-sm">
                     <label>Theme <select aria-label="Generated interface theme" value={selectedTheme} disabled={!canChangeTheme} onChange={event => changeTheme(event.target.value)} className="border rounded-lg p-2 disabled:opacity-50">
-                      <option value="light">Light</option><option value="dark">Dark</option><option value="blue">Blue</option>
+                      {THEMES.map(([value, label]) => <option key={value} value={value} disabled={!editableCode.includes(value)}>{label}</option>)}
                     </select></label>
                     <label>Viewport <select aria-label="Preview viewport" value={previewWidth} onChange={event => setPreviewWidth(event.target.value)} className="border rounded-lg p-2">
                       <option value="1280">Desktop · 1280 px</option><option value="768">Tablet · 768 px</option><option value="390">Mobile · 390 px</option><option value="auto">Fit available width</option>

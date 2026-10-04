@@ -18,10 +18,41 @@ THEMES = {
         'accent-hover': '#bfdbfe', 'on-accent': '#0f172a',
     },
     'blue': {
-        'page': '#eff6ff', 'surface': '#ffffff', 'text': '#172554',
-        'muted': '#1e40af', 'border': '#3b82f6', 'soft': '#dbeafe',
+        'page': '#bfdbfe', 'surface': '#eff6ff', 'text': '#172554',
+        'muted': '#1e40af', 'border': '#2563eb', 'soft': '#dbeafe',
         'soft-hover': '#bfdbfe', 'accent': '#1d4ed8',
         'accent-hover': '#1e40af', 'on-accent': '#ffffff',
+        'wireframe-surface': '#dbeafe',
+    },
+    'purple-gradient': {
+        'page': '#c4b5fd', 'surface': '#faf5ff', 'text': '#2e1065',
+        'muted': '#5b467a', 'border': '#8060a8', 'soft': '#ede9fe',
+        'soft-hover': '#ddd6fe', 'accent': '#6d28d9',
+        'accent-hover': '#5b21b6', 'on-accent': '#ffffff',
+        'wireframe-surface': 'rgba(250,245,255,.64)',
+        'page-image': 'linear-gradient(125deg,#ddd6fe 0%,#a78bfa 52%,#f0abfc 100%)',
+        'accent-image': 'linear-gradient(110deg,#7e22ce,#6d28d9,#4338ca)',
+        'accent-hover-image': 'linear-gradient(110deg,#6b21a8,#5b21b6,#3730a3)',
+    },
+    'ocean-gradient': {
+        'page': '#67e8f9', 'surface': '#ecfeff', 'text': '#083344',
+        'muted': '#285b60', 'border': '#33857f', 'soft': '#ccfbf1',
+        'soft-hover': '#99f6e4', 'accent': '#0b6962',
+        'accent-hover': '#115e59', 'on-accent': '#ffffff',
+        'wireframe-surface': 'rgba(236,254,255,.64)',
+        'page-image': 'linear-gradient(125deg,#7dd3fc 0%,#67e8f9 48%,#5eead4 100%)',
+        'accent-image': 'linear-gradient(110deg,#0e7490,#0f766e,#11665e)',
+        'accent-hover-image': 'linear-gradient(110deg,#155e75,#115e59,#134e4a)',
+    },
+    'sunset-gradient': {
+        'page': '#fed7aa', 'surface': '#fff7ed', 'text': '#431407',
+        'muted': '#79433f', 'border': '#a45e62', 'soft': '#ffe4e6',
+        'soft-hover': '#fed7aa', 'accent': '#b01655',
+        'accent-hover': '#9d174d', 'on-accent': '#ffffff',
+        'wireframe-surface': 'rgba(255,247,237,.64)',
+        'page-image': 'linear-gradient(125deg,#fdba74 0%,#fecaca 38%,#f9a8d4 76%,#ddd6fe 100%)',
+        'accent-image': 'linear-gradient(110deg,#c2410c,#be185d)',
+        'accent-hover-image': 'linear-gradient(110deg,#9a3412,#9d174d)',
     },
 }
 
@@ -31,9 +62,22 @@ FOCUS = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var
 def theme_css():
     rules = []
     for name, tokens in THEMES.items():
-        declarations = ';'.join(f'--s2c-{key}:{value}' for key, value in tokens.items())
+        # Image tokens are separate from colours: background-color, text,
+        # borders and form controls must never receive a CSS gradient value.
+        values = {'page-image': 'none', 'accent-image': 'none',
+                  'accent-hover-image': 'none',
+                  'wireframe-surface': tokens['surface'], **tokens}
+        declarations = ';'.join(f'--s2c-{key}:{value}' for key, value in values.items())
         scheme = 'dark' if name == 'dark' else 'light'
         rules.append(f'.sketch-page[data-sketch-theme="{name}"]{{{declarations};color-scheme:{scheme}}}')
+    rules.extend([
+        '.sketch-page{background-image:var(--s2c-page-image,none)}',
+        # Only the outer canvas is translucent. Nested cards, inputs and table
+        # rows continue to use solid surface/soft tokens for readable content.
+        '.sketch-page>.wireframe{background-color:var(--s2c-wireframe-surface,var(--s2c-surface))}',
+        '.sketch-page .s2c-primary{background-image:var(--s2c-accent-image,none)}',
+        '.sketch-page .s2c-primary:hover{background-image:var(--s2c-accent-hover-image,none)}',
+    ])
     return '\n'.join(rules)
 
 
@@ -51,6 +95,29 @@ def image_source(c):
 def js(value):
     # JSON expressions preserve braces, quotes and OCR text safely in JSX.
     return json.dumps(value, ensure_ascii=True)
+
+
+def profile_icon():
+    """Decorative account symbol; uses currentColor in every page theme."""
+    return ('<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" '
+            'fill="none" stroke="currentColor" strokeWidth={1.8} '
+            'strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 shrink-0">'
+            '<circle cx={12} cy={8} r={3} />'
+            '<path d="M5 21v-2a7 7 0 0 1 14 0v2" /></svg>')
+
+
+def action_icon(name):
+    """Render only an action already identified upstream; never infer from text."""
+    paths = {
+        'edit': '<path d="m16 3 5 5-12 12-6 1 1-6Z" /><path d="m14 5 5 5M4 15l5 5" />',
+        'delete': '<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" />',
+    }
+    if name not in paths:
+        return ''
+    return ('<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" '
+            'fill="none" stroke="currentColor" strokeWidth={1.8} '
+            'strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 shrink-0">'
+            + paths[name] + '</svg>')
 
 
 def generate_component(c):
@@ -86,10 +153,24 @@ def generate_component(c):
                     'bg-[var(--s2c-surface)] py-3 pl-10 pr-4 text-[var(--s2c-text)] '
                     f'placeholder:text-[var(--s2c-muted)] {focus}" /></div>')
         return f'<input id={ident} type="{input_type}" placeholder={value} aria-label={{{js(c.get("label") or text or "Text input")}}} className="w-full min-w-0 border border-[var(--s2c-border)] rounded-lg px-4 py-3 bg-[var(--s2c-surface)] placeholder:text-[var(--s2c-muted)] {focus}" />'
+    if kind == 'Button' and c.get('icon') in {'edit', 'delete'}:
+        label = c.get('label') or text or c['icon'].title()
+        return ('<button type="button" aria-label={' + js(label) + '} title={' + js(label) + '} '
+                'className="inline-flex h-9 w-9 shrink-0 items-center justify-center '
+                'rounded-md border border-[var(--s2c-border)] bg-[var(--s2c-surface)] '
+                'text-[var(--s2c-text)] hover:bg-[var(--s2c-soft-hover)] transition-colors '
+                + focus + '">' + action_icon(c['icon']) + '</button>')
     if kind == 'Button' and c.get('filled'):
-        return f'<button type="button" className="w-full rounded-lg bg-[var(--s2c-accent)] text-[var(--s2c-on-accent)] px-4 py-3 font-medium hover:bg-[var(--s2c-accent-hover)] transition-colors {focus}">{value}</button>'
+        content = (profile_icon() + value) if c.get('icon') == 'profile' else value
+        icon_classes = 'inline-flex items-center justify-center gap-2 ' if c.get('icon') == 'profile' else ''
+        return f'<button type="button" className="s2c-primary {icon_classes}w-full rounded-lg bg-[var(--s2c-accent)] text-[var(--s2c-on-accent)] px-4 py-3 font-medium hover:bg-[var(--s2c-accent-hover)] transition-colors {focus}">{content}</button>'
     if kind == 'Button':
-        return f'<button type="button" className="w-full border border-[var(--s2c-border)] bg-[var(--s2c-soft)] hover:bg-[var(--s2c-soft-hover)] rounded-lg px-4 py-3 font-medium transition-colors {focus}">{value if text else "Button"}</button>'
+        content = value if text else 'Button'
+        icon_classes = ''
+        if c.get('icon') == 'profile':
+            content = profile_icon() + content
+            icon_classes = 'inline-flex items-center justify-center gap-2 '
+        return f'<button type="button" className="{icon_classes}w-full border border-[var(--s2c-border)] bg-[var(--s2c-soft)] hover:bg-[var(--s2c-soft-hover)] rounded-lg px-4 py-3 font-medium transition-colors {focus}">{content}</button>'
     if kind in {'Check Box', 'Radio Button'}:
         input_type = 'checkbox' if kind == 'Check Box' else 'radio'
         return f'<label className="inline-flex items-center gap-2 text-sm cursor-pointer"><input type="{input_type}" name={{{js(c.get("group", "choice"))}}} className="w-4 h-4 shrink-0 accent-[var(--s2c-accent)] {focus}" /><span>{value}</span></label>'
@@ -99,6 +180,33 @@ def generate_component(c):
         return f'<textarea id={ident} aria-label={{{js(c.get("label") or text or "Text area")}}} placeholder={value} rows={{4}} className="w-full border border-[var(--s2c-border)] rounded-lg p-3 bg-[var(--s2c-surface)] text-[var(--s2c-text)] placeholder:text-[var(--s2c-muted)] {focus}" />'
     if kind == 'Select':
         return f'<select id={ident} aria-label={{{js(c.get("label") or text or "Select option")}}} className="w-full border border-[var(--s2c-border)] rounded-lg p-3 bg-[var(--s2c-surface)] text-[var(--s2c-text)] {focus}"><option>{value if text else "Select"}</option></select>'
+    if kind == 'Pagination':
+        # Pagination is already a detected semantic component. Render standard
+        # directional controls and only page labels actually supplied by OCR.
+        # Never infer a missing numeric sequence or pretend additional data exists.
+        labels = []
+        for fragment in c.get('texts', []):
+            labels.extend(re.findall(r'\d+|\.{3}|…', fragment))
+        classes = ('inline-flex h-9 min-w-9 shrink-0 items-center justify-center '
+                   'rounded-md border border-[var(--s2c-border)] px-2 '
+                   'bg-[var(--s2c-surface)] text-sm text-[var(--s2c-text)] '
+                   'hover:bg-[var(--s2c-soft-hover)] ' + focus)
+        def direction(label, path):
+            return ('<button type="button" aria-label={' + js(label) + '} className="'
+                    + classes + '"><svg aria-hidden="true" focusable="false" '
+                    'viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} '
+                    'strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">'
+                    '<path d={' + js(path) + '} /></svg></button>')
+        parts = [direction('Previous page', 'm14 6-6 6 6 6')]
+        for label in labels:
+            if label in {'...', '…'}:
+                parts.append('<span className="px-1 text-[var(--s2c-muted)]">{' + js(label) + '}</span>')
+            else:
+                parts.append('<button type="button" aria-label={' + js('Page '+label)
+                             + '} className="' + classes + '">{' + js(label) + '}</button>')
+        parts.append(direction('Next page', 'm10 6 6 6-6 6'))
+        return ('<nav aria-label="Pagination" className="flex min-w-0 flex-wrap '
+                'items-center justify-end gap-2">' + ''.join(parts) + '</nav>')
     if kind in {'Image', 'Carousel'}:
         src = image_source(c)
         if src:
@@ -155,10 +263,29 @@ def render_table(node):
     count = len(edges)-1
     width = max(1, edges[-1]-edges[0])
     min_width = max(320, count*112)
+    # Keep compact action groups inside their inferred column on narrow screens;
+    # the existing table wrapper supplies horizontal scrolling when necessary.
+    for row in rows:
+        for col, cell in enumerate(row.get('children', [])[:count]):
+            controls = cell.get('children', [])
+            if (cell.get('kind') == 'row' and controls and all(
+                    c.get('component', {}).get('class') == 'Button'
+                    and c['component'].get('icon') in {'edit', 'delete'} for c in controls)):
+                proportion = max(1, edges[col+1]-edges[col])/width
+                needed = 36*len(controls) + 8*(len(controls)-1) + 26
+                min_width = max(min_width, int(needed/proportion)+1)
 
     def cell_content(cell):
         if cell.get('kind') == 'component':
             return generate_component(cell['component'])
+        children = cell.get('children', [])
+        if cell.get('kind') == 'row' and children and all(
+                child.get('kind') == 'component'
+                and child.get('component', {}).get('class') == 'Button'
+                and child['component'].get('icon') in {'edit', 'delete'}
+                for child in children):
+            return '<div className="flex flex-nowrap items-center gap-2">' + ''.join(
+                cell_content(child) for child in children) + '</div>'
         # Cell children share normal flow; page-coordinate margins do not belong
         # inside a table cell. Keep any mapped controls and images interactive.
         return '<div className="flex flex-col gap-2">' + ''.join(
@@ -368,8 +495,19 @@ def render_layout_tree(node, scale):
                   and all(c['component'].get('class') in {'Link', 'Button'} for c in children[1:]))
     if navigation:
         brand = render_layout_tree(children[0], scale)
-        links = ''.join('<div className="shrink-0">' + render_layout_tree(c, scale) + '</div>'
-                        for c in children[1:])
+        items = []
+        for child in children[1:]:
+            component = child['component']
+            label = ' '.join(component.get('texts', [])).strip().casefold()
+            # A requested visual enhancement for existing account buttons only.
+            # Do not reclassify links, add controls, or alter the input layout.
+            if (component.get('class') == 'Button' and not component.get('icon')
+                    and label in {'admin', 'administrator', 'profile', 'account', 'my account'}):
+                rendered = generate_component({**component, 'icon': 'profile'})
+            else:
+                rendered = render_layout_tree(child, scale)
+            items.append('<div className="shrink-0">' + rendered + '</div>')
+        links = ''.join(items)
         return ('<header data-layout-kind="navigation" className="flex flex-wrap items-center '
                 'justify-between gap-x-8 gap-y-4 border-b border-[var(--s2c-border)] pb-4 mb-4">'
                 '<div className="shrink-0 max-w-full break-normal [&>h1]:text-2xl '

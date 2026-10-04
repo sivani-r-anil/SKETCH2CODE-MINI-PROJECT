@@ -248,6 +248,112 @@ def recover_empty_table_cells(layout, image):
     return count
 
 
+def recover_table_actions(layout, image):
+    """Infer a small set of outlined icons from repeated, otherwise unread cells.
+
+    This is a conservative OpenCV fallback, not a trained icon classifier.
+    A pencil needs a diagonal elongated outline with internal divisions. A bin
+    needs a wide lid, a handle hole, a body hole and two internal vertical marks.
+    Require the same recognised pattern in at least three rows of one column.
+    Unknown shapes retain their original crops; numeric cells are never filled.
+    """
+    import numpy as np
+    if image is None:
+        return 0
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    _, ink = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+    def identify(mask):
+        h, w = mask.shape
+        if min(h, w) < 10 or not .55 <= w/max(1, h) <= 1.8:
+            return None
+        contours, hierarchy = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+        if hierarchy is None:
+            return None
+        outer = max(contours, key=cv2.contourArea)
+        (_, _), (rw, rh), angle = cv2.minAreaRect(outer)
+        holes = [cv2.boundingRect(c) for i, c in enumerate(contours)
+                 if hierarchy[0, i, 3] >= 0 and cv2.contourArea(c) >= w*h*.01]
+        diagonal = 20 <= abs(angle) % 90 <= 70
+        if (diagonal and max(rw, rh)/max(1, min(rw, rh)) >= 2.7
+                and len(holes) >= 2):
+            return 'edit'
+        # A trash-bin outline is upright, with its widest stroke near the top.
+        lid = int(np.argmax(np.count_nonzero(mask, axis=1)))
+        body = [b for b in holes if b[2] >= .45*w and b[3] >= .45*h
+                and b[1] >= .15*h]
+        handle = [b for b in holes if b[1] < .2*h and b[3] <= .25*h
+                  and .15*w <= b[2] <= .65*w]
+        _, _, stats, _ = cv2.connectedComponentsWithStats(mask)
+        bars = [s for s in stats[1:] if s[3] >= .25*h and s[2] <= .18*w
+                and s[3] >= 3*s[2] and .15*w < s[0] < .85*w
+                and s[1] > .2*h and s[1]+s[3] < .95*h]
+        if (.6 <= w/h <= 1.2 and .08*h <= lid <= .35*h
+                and body and handle and len(bars) >= 2):
+            return 'delete'
+        return None
+
+    def symbols(component):
+        x, y, r, b = [int(component[k]) for k in ('x1', 'y1', 'x2', 'y2')]
+        if x < 0 or y < 0 or r > ink.shape[1] or b > ink.shape[0]:
+            return []
+        mask = ink[y:b, x:r]
+        if not mask.size:
+            return []
+        occupied = np.flatnonzero(np.any(mask > 0, axis=0))
+        if not len(occupied):
+            return []
+        # A wide blank interval separates icons; strokes inside one icon stay together.
+        chunks = np.split(occupied, np.where(np.diff(occupied) > max(3, mask.shape[0]*.22))[0]+1)
+        if not 1 <= len(chunks) <= 4:
+            return []
+        result = []
+        for chunk in chunks:
+            left, right = int(chunk[0]), int(chunk[-1])+1
+            ys = np.flatnonzero(np.any(mask[:, left:right] > 0, axis=1))
+            top, bottom = int(ys[0]), int(ys[-1])+1
+            action = identify(mask[top:bottom, left:right])
+            if action is None:
+                return []
+            result.append(dict(action=action, x1=x+left, y1=y+top,
+                               x2=x+right, y2=y+bottom))
+        return result
+
+    count = 0
+    def visit(node):
+        nonlocal count
+        if node.get('role') == 'table':
+            columns = {}
+            for row in node.get('children', [])[1:]:
+                for col, cell in enumerate(row.get('children', [])):
+                    c = cell.get('component', {})
+                    if c.get('source') != 'table-cell-raster-fallback':
+                        continue
+                    found = symbols(c)
+                    if found:
+                        columns.setdefault((col, tuple(s['action'] for s in found)), []).append((cell, found))
+            for matches in columns.values():
+                if len(matches) < 3:
+                    continue
+                for cell, found in matches:
+                    original = cell.pop('component')
+                    cell.update(kind='row', children=[], source='opencv-repeated-action-shapes')
+                    for i, symbol in enumerate(found):
+                        action = symbol['action']
+                        bounds = {k: symbol[k] for k in ('x1', 'y1', 'x2', 'y2')}
+                        component = dict(bounds, id=f'{original["id"]}-action-{i}',
+                                         **{'class': 'Button'}, texts=[action.title()],
+                                         icon=action, source='opencv-repeated-action-shapes',
+                                         corrections=['Action inferred from outlined icon geometry and repetition across table rows.'])
+                        cell['children'].append(dict(bounds, kind='component', component=component))
+                    count += 1
+            return
+        for child in node.get('children', []):
+            visit(child)
+    visit(layout.get('tree', {}))
+    return count
+
+
 def run_pipeline(file_path, processed_path):
     # FastAPI executes this in a worker thread; cap native pools here too.
     torch.set_num_threads(4)
@@ -270,7 +376,11 @@ def run_pipeline(file_path, processed_path):
     attach_image_crops(mapped, original_image)
     layout = reconstruct_layout(mapped)
     table_crops = recover_empty_table_cells(layout, original_image)
+    action_cells = recover_table_actions(layout, original_image)
+    table_crops -= action_cells
     warnings = []
+    if action_cells:
+        warnings.append(f'{action_cells} table cells use action buttons inferred from repeated pencil/bin shapes. Verify the inferred meanings; buttons have no data handlers.')
     if table_crops:
         warnings.append(f'{table_crops} unread table cells use original-image crops. These are visual fallbacks, not recognised editable text or working actions.')
     if sum(c['class'] == 'Carousel' for c in mapped) < carousel_count:

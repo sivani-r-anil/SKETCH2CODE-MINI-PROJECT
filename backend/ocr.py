@@ -160,6 +160,12 @@ def recover_grid_numbers(image, existing):
         if len(column) < 3 or sum(len(content(c)) == 1 and bool(
                 numeric.fullmatch(content(c)[0]['text'].strip())) for c in column) < 2:
             continue
+        # Use observed cell contents to establish an integer column. Exclude
+        # its top cell (the header); do not infer values from row positions.
+        body_text = [o['text'].strip() for cell in sorted(column, key=lambda c: c[1])[1:]
+                     for o in content(cell)]
+        integer_column = len(body_text) >= 2 and all(
+            re.fullmatch(r'[0-9]+', text) for text in body_text)
         for x, y, w, h in sorted(column, key=lambda c: c[1]):
             if content((x, y, w, h)) or attempts >= 24:
                 continue
@@ -181,6 +187,7 @@ def recover_grid_numbers(image, existing):
             attempts += 1
             crop = image[top+b:top+d, left+a:left+c]
             readings = []
+            unrestricted_text = []
             for factor in (3, 4):
                 enlarged = cv2.resize(crop, None, fx=factor, fy=factor,
                                       interpolation=cv2.INTER_CUBIC)
@@ -194,15 +201,60 @@ def recover_grid_numbers(image, existing):
                     break
                 _, text, confidence = result[0]
                 text = text.strip()
-                if not numeric.fullmatch(text) or float(confidence) < .70:
+                unrestricted_text.append(text)
+                if not numeric.fullmatch(text):
                     break
                 readings.append((text, float(confidence)))
-            if len(readings) == 2 and readings[0][0] == readings[1][0]:
+            source = 'ocr-grid-cell-retry'
+            matching = len(readings) == 2 and readings[0][0] == readings[1][0]
+            agreed = matching and min(r[1] for r in readings) >= .70
+            # Resizing can reduce confidence without changing the recognised
+            # digit. In this tightly bounded case retain a strong reading when
+            # a second view independently returns the same digit moderately well.
+            # Keep the minimum confidence in the trace, not the strongest score.
+            narrow_integer = (integer_column and len(marks) == 1
+                              and (c-a) <= .85*(d-b))
+            if (not agreed and matching and narrow_integer
+                    and re.fullmatch(r'[0-9]', readings[0][0])
+                    and max(r[1] for r in readings) >= .95
+                    and min(r[1] for r in readings) >= .60):
+                agreed = True
+                source = 'ocr-grid-consensus-retry'
+            # A thin isolated digit is easily confused with I/l by unrestricted
+            # OCR. Retry only a single compact glyph in an established integer
+            # column, never an arbitrary icon, word, or multi-symbol cell.
+            # Digit restriction changes the recogniser vocabulary, not the value:
+            # two differently processed views must still agree at high confidence.
+            if (not agreed and narrow_integer
+                    and all(not t or re.fullmatch(r'[0-9Il|]', t)
+                            for t in unrestricted_text)):
+                readings = []
+                gray_crop = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+                _, binary_crop = cv2.threshold(
+                    gray_crop, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+                for view, factor in ((gray_crop, 4), (binary_crop, 5)):
+                    enlarged = cv2.resize(view, None, fx=factor, fy=factor,
+                                          interpolation=cv2.INTER_CUBIC)
+                    border = max(12, round((d-b)*factor*.5))
+                    enlarged = cv2.copyMakeBorder(enlarged, border, border, border, border,
+                                                 cv2.BORDER_CONSTANT, value=255)
+                    result = get_reader().recognize(
+                        enlarged, detail=1, paragraph=False, allowlist='0123456789')
+                    if len(result) != 1:
+                        break
+                    _, text, confidence = result[0]
+                    text = text.strip()
+                    if not re.fullmatch(r'[0-9]', text) or float(confidence) < .90:
+                        break
+                    readings.append((text, float(confidence)))
+                source = 'ocr-grid-numeric-retry'
+                agreed = len(readings) == 2 and readings[0][0] == readings[1][0]
+            if agreed:
                 additions.append({'text': readings[0][0],
                                   'confidence': round(min(r[1] for r in readings), 3),
                                   'box': [[int(left+a), int(top+b)], [int(left+c), int(top+b)],
                                           [int(left+c), int(top+d)], [int(left+a), int(top+d)]],
-                                  'source': 'ocr-grid-cell-retry'})
+                                  'source': source})
     return additions
 
 
