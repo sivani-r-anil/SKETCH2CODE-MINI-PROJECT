@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Editor from "@monaco-editor/react"
 import * as Babel from "@babel/standalone"
 import JSZip from "jszip"
+import "./App.css"
 
 const THEMES = [
   ["light", "Light"], ["dark", "Dark"], ["blue", "Blue"],
@@ -165,6 +166,7 @@ function buildPreviewDocument(preview) {
 }
 
 function App() {
+  const [appStage, setAppStage] = useState("landing")
   const [message, setMessage] = useState("")
   const [image, setImage] = useState(null)
   const [processedImage, setProcessedImage] = useState(null)
@@ -242,6 +244,7 @@ function App() {
       setDiagnostics(null)
       setGeneratedCode("")
       setEditableCode("")
+      setExportMessage("")
     }
   }
 
@@ -269,6 +272,8 @@ function App() {
       }
 
       const data = await response.json()
+      const code = data.generated_code || ""
+      if (!code.trim()) throw new Error("No React code was returned. Please retry or choose another image.")
 
       setProcessedImage(data.processed_filename)
       setDetections(data.detections || [])
@@ -276,11 +281,11 @@ function App() {
       setMappedComponents(data.mapped_components || [])
       setDiagnostics(data)
 
-      const code = data.generated_code || ""
       setGeneratedCode(code)
       setEditableCode(code)
 
       setMessage("Conversion complete. Compare the preview with your wireframe.")
+      setAppStage("workspace")
     } catch (error) {
       console.error(error)
       setMessage(`Upload failed: ${error.message}`)
@@ -301,351 +306,276 @@ function App() {
   }
   const hasResults = Boolean(generatedCode)
 
+  const imageDialog = useRef(null)
+  const mainRef = useRef(null)
+  const [imageView, setImageView] = useState("original")
+  const navigate = (stage) => {
+    if (!isProcessing) setAppStage(stage)
+  }
+  const openImage = (view) => {
+    setImageView(view)
+    imageDialog.current?.showModal()
+  }
+  useEffect(() => {
+    mainRef.current?.focus({ preventScroll: true })
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" })
+  }, [appStage])
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-
-      {/* NAVBAR */}
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Sketch<span className="text-blue-600">2Code</span>
-            </h1>
-            <p className="text-xs text-slate-500">
-              AI-Driven Wireframe to React
-            </p>
-          </div>
-
-          <div className="hidden sm:flex items-center gap-2 text-sm text-slate-500">
-            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            React + Tailwind
+    <div className="sc-app" id="top">
+      <a href="#main-content" className="sc-button sc-skip-link" onClick={event => { event.preventDefault(); mainRef.current?.focus() }}>Skip to main content</a>
+      <header className="sc-header">
+        <div className="sc-shell sc-header-inner">
+          <a className="sc-brand" href="#top" aria-label="Sketch2Code home" aria-disabled={isProcessing} onClick={event => { event.preventDefault(); navigate("landing") }}>
+            <span className="sc-brand-mark" aria-hidden="true">&lt;/&gt;</span>
+            <span>Sketch<em>2</em>Code</span>
+          </a>
+          <span className="sc-header-note">From an idea on paper to an interface.</span>
+          <div className="sc-toolbar">
+            {appStage === "workspace" ? <button className="sc-button sc-button-small" onClick={() => navigate("upload")}>← New Wireframe</button> : <>
+              {appStage === "upload" && <button className="sc-button sc-button-quiet sc-button-small" disabled={isProcessing} onClick={() => navigate("landing")}>← Back to Home</button>}
+              {(appStage === "landing" || hasResults) && <button className="sc-button sc-button-small" disabled={isProcessing} onClick={() => navigate(hasResults ? "workspace" : "upload")}>Open Workspace <Icon name="arrow" /></button>}
+            </>}
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-10">
-
-        {/* HERO */}
-        <section className="text-center max-w-3xl mx-auto mb-10">
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium mb-4">
-            AI-Powered UI Generation
+      <main className="sc-shell sc-stage" id="main-content" ref={mainRef} tabIndex={-1} key={appStage}>
+        {appStage === "landing" && <>
+        <section className="sc-hero" aria-labelledby="hero-title">
+          <div className="sc-hero-grid">
+            <div className="sc-hero-copy">
+              <p className="sc-eyebrow"><span className="sc-dot" />Sketch. Analyze. Create.</p>
+              <h1 id="hero-title">Turn Wireframes Into <span>React Interfaces.</span></h1>
+              <p className="sc-hero-description">Bring hand-drawn and digital wireframes into the browser. Computer vision and AI turn your sketch into editable React + Tailwind code, with a live preview.</p>
+              <div className="sc-hero-actions">
+                <button onClick={() => navigate("upload")} className="sc-button sc-button-primary">Get Started <Icon name="arrow" /></button>
+                <span className="sc-muted">Your sketch. Your code.</span>
+              </div>
+              <p className="sc-hero-footnote">Built with YOLO, EasyOCR & spatial layout reconstruction.</p>
+            </div>
+            <HeroVisual />
           </div>
-
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-            Turn your wireframe into
-            <span className="text-blue-600"> React code</span>
-          </h2>
-
-          <p className="text-slate-600 text-lg">
-            Upload a hand-drawn or digital wireframe and generate
-            editable React components with an interactive live preview.
-          </p>
         </section>
 
-        {/* UPLOAD CARD */}
-        <section className="max-w-3xl mx-auto bg-white border border-slate-200 rounded-2xl shadow-sm p-6 mb-10">
+        <div className="sc-steps" aria-label="How Sketch2Code works">
+          {[
+            ["Upload a wireframe", "Start with a hand-drawn or digital sketch."],
+            ["Analyze with AI", "Detect components, text and spatial relationships."],
+            ["Generate React UI", "Translate the structure into React + Tailwind."],
+            ["Edit & export", "Refine the code, preview and download."],
+          ].map(([title, description], index) => <div className="sc-step" key={title}>
+            <span className="sc-step-number">0{index + 1}</span>
+            <div><h3>{title}</h3><p>{description}</p></div>
+          </div>)}
+        </div>
 
-          <label
-            htmlFor="wireframe-upload"
-            className="block border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/40 transition"
-          >
-            <div className="text-4xl mb-3">⌁</div>
+        </>}
 
-            <p className="font-semibold text-slate-800">
-              {image ? image.name : "Choose your wireframe"}
-            </p>
-
-            <p className="text-sm text-slate-500 mt-1">
-              PNG, JPG or JPEG
-            </p>
-
-            <span className="inline-block mt-4 bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium">
-              Browse Image
-            </span>
-
-            <input
-              id="wireframe-upload"
-              type="file"
-              accept="image/png,image/jpeg"
-              disabled={isProcessing}
-              onChange={handleImageChange}
-              className="hidden"
-            />
-          </label>
-
-          {image && (
-            <button
-              onClick={uploadImage}
-              disabled={isProcessing}
-              className="mt-5 w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-3 rounded-xl font-semibold transition"
-            >
-              {isProcessing
-                ? "Analyzing Wireframe..."
-                : "Generate React UI"}
-            </button>
-          )}
-
-          {message && (
-            <div
-              className={`mt-4 text-sm text-center rounded-lg p-3 ${
-                message.includes("failed")
-                  ? "bg-red-50 text-red-700"
-                  : "bg-slate-50 text-slate-600"
-              }`}
-            >
-              {message}
+        {appStage === "upload" && <div className="sc-workspace sc-upload-screen" style={{ maxWidth: 900, marginInline: "auto" }}>
+          <section className="sc-section" aria-labelledby="upload-title">
+            <div className="sc-section-heading">
+              <div><p className="sc-eyebrow">The workspace</p><h2 id="upload-title">Upload your wireframe</h2><p>Analyze the components, text and spatial structure of your hand-drawn or digital wireframe.</p></div>
             </div>
-          )}
-        </section>
-
-        {/* IMAGE COMPARISON */}
-        {image && (
-          <section className="grid md:grid-cols-2 gap-6 mb-10">
-
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-200">
-                <h3 className="font-semibold">Original Wireframe</h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  Uploaded design
-                </p>
-              </div>
-
-              <div className="h-80 p-5 flex items-center justify-center bg-slate-50">
-                <img
-                  src={originalUrl}
-                  alt="Original wireframe"
-                  className="max-w-full max-h-full object-contain rounded-lg"
-                />
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-200">
-                <h3 className="font-semibold">Processed Wireframe</h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  OpenCV preprocessing result
-                </p>
-              </div>
-
-              <div className="h-80 p-5 flex items-center justify-center bg-slate-50">
-                {processedImage ? (
-                  <img
-                    src={`${API_BASE}/uploads/${processedImage}`}
-                    alt="Processed wireframe"
-                    className="max-w-full max-h-full object-contain rounded-lg"
-                  />
-                ) : (
-                  <p className="text-sm text-slate-400">
-                    Processed image will appear here
-                  </p>
-                )}
-              </div>
-            </div>
-
-          </section>
-        )}
-
-        {/* MAIN WORKSPACE */}
-        {hasResults && (
-          <>
-            <section className="mb-4">
-              <div>
-                <h2 className="text-2xl font-bold">
-                  Generated Workspace
-                </h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  Edit the generated React code and see changes instantly.
-                </p>
-              </div>
-            </section>
-
-            <section className="grid gap-6 mb-8">
-
-              {/* CODE */}
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-200 flex justify-between items-center">
-                  <div>
-                    <h3 className="font-semibold">
-                      React Code
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      Editable JSX
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <button className="text-xs bg-blue-50 text-blue-700 px-3 py-2 rounded-full" onClick={() => downloadFile("GeneratedPage.jsx", editableCode, "text/javascript")}>Download JSX</button>
-                    <button disabled={isExporting || !editableCode.trim() || Boolean(preview.error)} className="text-xs bg-blue-700 text-white px-3 py-2 rounded-full disabled:opacity-50" onClick={exportProject}>{isExporting ? "Creating ZIP…" : "Download ZIP"}</button>
-                  </div>
+            <div className="sc-panel sc-upload" aria-busy={isProcessing}>
+              <div className="sc-dropzone">
+                <div className="sc-upload-copy">
+                  <span className="sc-upload-symbol"><Icon name="upload" /></span>
+                  <div><h3>Choose your wireframe</h3><p>PNG, JPG or JPEG · Keep lines and text clearly visible.</p></div>
                 </div>
-                {exportMessage && <p role="status" className="px-5 py-2 text-sm text-slate-700">{exportMessage}</p>}
-
-                <Editor
-                  height="520px"
-                  defaultLanguage="javascript"
-                  value={editableCode}
-                  onChange={(value) =>
-                    setEditableCode(value || "")
-                  }
-                  theme="vs-dark"
-                  options={{
-                    minimap: { enabled: false },
-                    fontSize: 13,
-                    wordWrap: "on",
-                    padding: { top: 16 },
-                  }}
-                />
+                <label className="sc-button" htmlFor="wireframe-upload">
+                  <Icon name="image" />{image ? "Change Image" : "Browse Image"}
+                  <input id="wireframe-upload" type="file" accept="image/png,image/jpeg" disabled={isProcessing} onChange={handleImageChange} className="sc-file-input" />
+                </label>
               </div>
-
-              {/* PREVIEW */}
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-200 flex flex-wrap gap-3 justify-between items-center">
-                  <div>
-                    <h3 className="font-semibold">
-                      Live Preview
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      Interactive generated interface
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3 text-sm">
-                    <label>Theme <select aria-label="Generated interface theme" value={selectedTheme} disabled={!canChangeTheme} onChange={event => changeTheme(event.target.value)} className="border rounded-lg p-2 disabled:opacity-50">
-                      {THEMES.map(([value, label]) => <option key={value} value={value} disabled={!editableCode.includes(value)}>{label}</option>)}
-                    </select></label>
-                    <label>Viewport <select aria-label="Preview viewport" value={previewWidth} onChange={event => setPreviewWidth(event.target.value)} className="border rounded-lg p-2">
-                      <option value="1280">Desktop · 1280 px</option><option value="768">Tablet · 768 px</option><option value="390">Mobile · 390 px</option><option value="auto">Fit available width</option>
-                    </select></label>
-                    <button disabled={Boolean(preview.error)} className="text-blue-700 disabled:opacity-50" onClick={() => downloadFile("GeneratedPage.html", previewDocument, "text/html")}>Download HTML</button>
-                  </div>
-                </div>
-
-                {preview.error && <p role="alert" className="p-4 text-sm text-red-700 bg-red-50 whitespace-pre-wrap">Preview error: {preview.error}</p>}
-                <p className="px-5 py-2 text-xs text-slate-500">Select a viewport to check responsive layouts. Scroll horizontally when the selected width exceeds the available space. Preview and HTML export require an internet connection.</p>
-                {!canChangeTheme && <p className="px-5 py-2 text-xs text-amber-800">Theme selection requires the generated theme attribute and tokens in the editor.</p>}
-                <div className="overflow-auto bg-slate-100">
-                <iframe
-                  title="Live Preview"
-                  sandbox="allow-scripts"
-                  className="block mx-auto h-[760px] bg-white border-0"
-                  srcDoc={previewDocument}
-                  style={{ width: previewWidth === "auto" ? "100%" : Number(previewWidth), minWidth: previewWidth === "auto" ? undefined : Number(previewWidth) }}
-                />
-                </div>
+              <div className="sc-upload-actions">
+                <p className="sc-file-name">{image ? <>Selected: <strong>{image.name}</strong></> : "No image selected yet."}</p>
+                <button className="sc-button sc-button-primary" disabled={!image || isProcessing} onClick={uploadImage}>
+                  {isProcessing ? <><span className="sc-spinner" aria-hidden="true" />Analyzing Wireframe…</> : <>Analyze Wireframe <Icon name="arrow" /></>}
+                </button>
               </div>
-
-            </section>
-
-            {/* PROCESSING DETAILS */}
-            <details className="bg-white border border-slate-200 rounded-2xl shadow-sm mb-10">
-              <summary className="cursor-pointer px-6 py-5 font-semibold">
-                Processing Details
-                <span className="ml-2 text-sm font-normal text-slate-500">
-                  YOLO · OCR · Layout Reconstruction
-                </span>
-              </summary>
-
-              {diagnostics && <div className="border-t border-slate-200 p-6 space-y-4">
-                <div className="flex flex-wrap items-center gap-3 text-sm">
-                  <span>Completed in {diagnostics.duration_seconds}s</span>
-                  <button className="text-blue-700 underline" onClick={() => downloadFile("pipeline-trace.json", JSON.stringify(diagnostics, null, 2), "application/json")}>Download pipeline trace</button>
-                  <select aria-label="Detection view" className="border rounded-lg p-2" value={detectionView} onChange={event => setDetectionView(event.target.value)}>
-                    <option value="original_detections">YOLO: original image</option>
-                    <option value="processed_detections">YOLO: processed image</option>
-                    <option value="mapped_components">After mapping and corrections</option>
-                  </select>
+              {message && <p role="status" className={`sc-status ${message.includes("failed") ? "sc-status-error" : ""}`}>{message}</p>}
+              {isProcessing && <div className="sc-analysis-status">
+                <p className="sc-muted">Detecting interface components, reading text and reconstructing the layout.</p>
+                <div className="sc-pipeline" aria-label="Pipeline overview, not live stage progress">
+                {["Preprocessing", "Detection", "OCR", "Mapping", "Layout", "React generation" ].map(stage => <span key={stage}>{stage}</span>)}
                 </div>
-                {diagnostics.warnings?.map((warning, i) => <p key={i} className="text-sm text-amber-800 bg-amber-50 rounded-lg p-3">{warning}</p>)}
-                <DetectionOverlay imageUrl={originalUrl} items={diagnostics[detectionView] || []} />
+                <p className="sc-muted">Pipeline overview — individual stage progress is not reported.</p>
               </div>}
+            </div>
+          </section>
 
-              <div className="border-t border-slate-200 p-6 grid md:grid-cols-3 gap-6">
+          {image && <section className="sc-section sc-panel" aria-labelledby="original-title">
+            <div className="sc-panel-header">
+              <div><h3 id="original-title">Selected Wireframe</h3><p className="sc-file-name">{image.name}</p></div>
 
-                <div>
-                  <h4 className="font-semibold mb-3">
-                    Detected Components
-                  </h4>
+            </div>
+            <div className="sc-original"><img src={originalUrl} alt="Selected wireframe to analyze" style={{ maxHeight: 320 }} /></div>
+          </section>}
 
-                  <div className="space-y-2">
-                    {detections.map((item, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between text-sm bg-slate-50 px-3 py-2 rounded-lg"
-                      >
-                        <span>{item.class}</span>
-                        <span className="text-slate-500">
-                          {item.confidence}
-                        </span>
-                      </div>
-                    ))}
+        </div>}
+
+        {appStage === "workspace" && hasResults && <div className="sc-workspace sc-result-screen">
+          <section className="sc-section sc-panel" aria-label="Input wireframe reference">
+            <div className="sc-panel-header">
+              <div><h3>Input Wireframe</h3><p className="sc-file-name">{image?.name}</p></div>
+              <div className="sc-toolbar">
+                <button className="sc-button sc-button-small" disabled={!originalUrl} onClick={() => openImage("original")}><Icon name="image" />View Original</button>
+                <button className="sc-button sc-button-small" disabled={!processedImage} onClick={() => openImage("processed")}><Icon name="image" />View Processed Image</button>
+              </div>
+            </div>
+          </section>
+            <section className="sc-section" aria-labelledby="code-title">
+              <div className="sc-section-heading">
+                <div><p className="sc-eyebrow">Make it yours</p><h2 id="code-title">Generated React code</h2><p>Edit the JSX below. Your preview and downloads use this editor's current code.</p></div>
+                <span className="sc-result-meta">React + Tailwind CSS</span>
+              </div>
+              <div className="sc-panel">
+                <div className="sc-panel-header">
+                  <div className="sc-editor-label"><Icon name="code" /><h3>React Code</h3><code>GeneratedPage.jsx</code></div>
+                  <div className="sc-toolbar">
+                    <button className="sc-button sc-button-small" onClick={() => downloadFile("GeneratedPage.jsx", editableCode, "text/javascript")}>Download JSX</button>
+                    <button className="sc-button sc-button-small" disabled={isExporting || !editableCode.trim() || Boolean(preview.error)} onClick={exportProject}><Icon name="download" />{isExporting ? "Creating ZIP…" : "Download ZIP"}</button>
                   </div>
                 </div>
+                {exportMessage && <p role="status" className="sc-export-message">{exportMessage}</p>}
+                <div className="sc-editor">
+                  <Editor height="520px" defaultLanguage="javascript" value={editableCode} onChange={value => setEditableCode(value || "")} theme="vs-dark"
+                    options={{ minimap: { enabled: false }, fontSize: 13, wordWrap: "on", padding: { top: 16 }, automaticLayout: true }} />
+                </div>
+              </div>
+            </section>
 
-                <div>
-                  <h4 className="font-semibold mb-3">
-                    Extracted Text
-                  </h4>
-
-                  <div className="space-y-2">
-                    {ocrTexts.map((item, index) => (
-                      <div
-                        key={index}
-                        className="text-sm bg-slate-50 px-3 py-2 rounded-lg"
-                      >
-                        {item.text}
-                      </div>
-                    ))}
+            <section className="sc-section" aria-labelledby="preview-title">
+              <div className="sc-section-heading"><div><p className="sc-eyebrow">See it take shape</p><h2 id="preview-title">Live preview</h2><p>Explore themes, check responsive layouts and interact with the generated interface.</p></div></div>
+              <div className="sc-panel">
+                <div className="sc-panel-header">
+                  <div><h3>Generated Interface</h3><p>Updates from Monaco as you edit.</p></div>
+                  <div className="sc-toolbar">
+                    <label className="sc-control-label">Theme
+                      <select aria-label="Generated interface theme" className="sc-control" value={selectedTheme} disabled={!canChangeTheme} onChange={event => changeTheme(event.target.value)}>
+                        {THEMES.map(([value, label]) => <option key={value} value={value} disabled={!editableCode.includes(value)}>{label}</option>)}
+                      </select>
+                    </label>
+                    <label className="sc-control-label">Viewport
+                      <select aria-label="Preview viewport" className="sc-control" value={previewWidth} onChange={event => setPreviewWidth(event.target.value)}>
+                        <option value="1280">Desktop · 1280 px</option><option value="768">Tablet · 768 px</option><option value="390">Mobile · 390 px</option><option value="auto">Fit available width</option>
+                      </select>
+                    </label>
+                    <button className="sc-button sc-button-small" disabled={Boolean(preview.error)} onClick={() => downloadFile("GeneratedPage.html", previewDocument, "text/html")}>Download HTML</button>
                   </div>
                 </div>
-
-                <div>
-                  <h4 className="font-semibold mb-3">
-                    Mapped Components
-                  </h4>
-
-                  <div className="space-y-2">
-                    {mappedComponents.map((item, index) => (
-                      <div
-                        key={index}
-                        className="text-sm bg-slate-50 px-3 py-2 rounded-lg"
-                      >
-                        <span className="font-medium">
-                          {item.class}
-                        </span>
-
-                        <p className="text-xs text-slate-500 mt-1">{item.source} {item.original_class ? ` · corrected from ${item.original_class}` : ""}</p>
-                        <p className="text-xs text-slate-500 mt-1">
-                          {item.texts?.length
-                            ? item.texts.join(", ")
-                            : "No text matched"}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
+                {preview.error && <p role="alert" className="sc-preview-error">Preview error: {preview.error}</p>}
+                <p className="sc-preview-note">Scroll horizontally when the selected viewport exceeds the available space. Preview and HTML export require an internet connection.</p>
+                {!canChangeTheme && <p className="sc-preview-note">Theme selection requires the generated theme attribute and tokens in the editor.</p>}
+                <div className="sc-preview-scroll">
+                  <iframe title="Live Preview" sandbox="allow-scripts" className="sc-preview-frame" srcDoc={previewDocument}
+                    style={{ width: previewWidth === "auto" ? "100%" : Number(previewWidth), minWidth: previewWidth === "auto" ? undefined : Number(previewWidth) }} />
                 </div>
+              </div>
+            </section>
 
+            <details className="sc-panel sc-diagnostics">
+              <summary>Processing Details<span>YOLO · OCR · Mapping · Layout Reconstruction</span></summary>
+              <div className="sc-diagnostic-body">
+                {diagnostics && <>
+                  <div className="sc-toolbar">
+                    <span className="sc-muted">Completed in {diagnostics.duration_seconds}s</span>
+                    <button className="sc-button sc-button-small" onClick={() => downloadFile("pipeline-trace.json", JSON.stringify(diagnostics, null, 2), "application/json")}>Download pipeline trace</button>
+                    <select aria-label="Detection view" className="sc-control" value={detectionView} onChange={event => setDetectionView(event.target.value)}>
+                      <option value="original_detections">YOLO: original image</option><option value="processed_detections">YOLO: processed image</option><option value="mapped_components">After mapping and corrections</option>
+                    </select>
+                  </div>
+                  {diagnostics.warnings?.map((warning, i) => <p key={i} className="sc-warning">{warning}</p>)}
+                  <DetectionOverlay imageUrl={originalUrl} items={diagnostics[detectionView] || []} />
+                </>}
+                <div className="sc-diagnostic-grid">
+                  <div><h4>Detected Components ({detections.length})</h4><div className="sc-diagnostic-scroll"><table><thead><tr><th>Component</th><th>Confidence</th></tr></thead><tbody>
+                    {detections.map((item, i) => <tr key={i}><td>{item.class}</td><td>{item.confidence}</td></tr>)}
+                  </tbody></table></div></div>
+                  <div><h4>Extracted Text ({ocrTexts.length})</h4><div className="sc-diagnostic-scroll"><table><thead><tr><th>Text</th></tr></thead><tbody>
+                    {ocrTexts.map((item, i) => <tr key={i}><td>{item.text}</td></tr>)}
+                  </tbody></table></div></div>
+                  <div><h4>Mapped Components ({mappedComponents.length})</h4><div className="sc-diagnostic-scroll"><table><thead><tr><th>Component / source</th><th>Matched text</th></tr></thead><tbody>
+                    {mappedComponents.map((item, i) => <tr key={i}><td>{item.class}<p className="sc-muted">{item.source}{item.original_class ? ` · corrected from ${item.original_class}` : ""}</p></td><td>{item.texts?.length ? item.texts.join(", ") : "No text matched"}</td></tr>)}
+                  </tbody></table></div></div>
+                </div>
               </div>
             </details>
-          </>
-        )}
-
+        </div>}
       </main>
 
-      <footer className="border-t border-slate-200 bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-5 text-center text-sm text-slate-500">
-          Sketch2Code · AI-Driven Wireframe to React Code Synthesizer
-        </div>
-      </footer>
+      <footer className="sc-footer"><div className="sc-shell sc-footer-inner">
+        <span className="sc-brand">Sketch<em>2</em>Code</span>
+        <p>AI-Driven Wireframe-to-React Code Synthesizer · MCA Mini Project</p>
+      </div></footer>
 
+      <dialog ref={imageDialog} className="sc-modal" aria-labelledby="image-dialog-title" onClick={event => {
+        if (event.target !== event.currentTarget) return
+        const rect = event.currentTarget.getBoundingClientRect()
+        if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) event.currentTarget.close()
+      }}>
+        <div className="sc-modal-header"><div><h2 id="image-dialog-title">{imageView === "original" ? "Original Wireframe" : "Preprocessed Wireframe"}</h2><p>{imageView === "original" ? "Your uploaded design reference." : "OpenCV output used by the existing analysis pipeline."}</p></div>
+          <button autoFocus className="sc-button sc-button-small" onClick={() => imageDialog.current?.close()} aria-label="Close wireframe image"><Icon name="close" />Close</button>
+        </div>
+        <div className="sc-modal-body">{imageView === "original" ? (originalUrl && <img src={originalUrl} alt="Original uploaded wireframe" />) : (processedImage && <img src={`${API_BASE}/uploads/${processedImage}`} alt="OpenCV preprocessed wireframe" />)}</div>
+      </dialog>
     </div>
   )
 }
 
+function Icon({ name }) {
+  const paths = {
+    arrow: "M4 12h16m-6-6 6 6-6 6",
+    upload: "M12 16V3m-5 5 5-5 5 5M4 16v5h16v-5",
+    download: "M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4",
+    code: "m8 6-6 6 6 6m8-12 6 6-6 6m-3-14-2 16",
+    image: "M3 3h18v18H3zM3 17l5-5 4 4 3-3 6 6M15 7h.01",
+    close: "m6 6 12 12M6 18 18 6",
+  }
+  return <svg className="sc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name] || paths.code} /></svg>
+}
+
+function HeroVisual() {
+  return <div className="sc-visual" role="img" aria-label="Illustration of a wireframe becoming React code and a generated interface">
+    <div className="sc-scene" aria-hidden="true">
+      <svg className="sc-connectors" viewBox="0 0 500 450"><path d="M130 140C230 120 230 300 310 320M240 340C400 390 450 240 400 190" /></svg>
+      <div className="sc-window sc-window-wire">
+        <div className="sc-window-bar"><i /><i /><i /><span>01 / wireframe</span></div>
+        <div className="sc-window-body"><div className="sc-wire-nav"><b /><span /></div><div className="sc-wire-title" /><div className="sc-wire-line" /><div className="sc-wire-line" /><div className="sc-wire-box"><Icon name="image" /></div></div>
+      </div>
+      <div className="sc-analysis-chip"><Icon name="code" />Component analysis</div>
+      <div className="sc-window sc-window-code">
+        <div className="sc-window-bar"><i /><i /><i /><span>02 / GeneratedPage.jsx</span></div>
+        <div className="sc-window-body">
+          <span className="sc-code-line"><small>1</small><em>function</em>{" Interface() {"}</span>
+          <span className="sc-code-line"><small>2</small>{"  "}<em>return</em>{" ("}</span>
+          <span className="sc-code-line"><small>3</small>{"    <"}<b>main</b>{" className="}<em>"grid"</em>{">"}</span>
+          <span className="sc-code-line"><small>4</small>{"      <"}<b>Header</b>{" />"}</span>
+          <span className="sc-code-line"><small>5</small>{"      <"}<b>Content</b>{" />"}</span>
+          <span className="sc-code-line"><small>6</small>{"    </"}<b>main</b>{">"}</span>
+          <span className="sc-code-line"><small>7</small>{"  );"}</span>
+          <span className="sc-code-line"><small>8</small>{"}"}</span>
+        </div>
+      </div>
+      <div className="sc-window sc-window-result">
+        <div className="sc-window-bar"><i /><i /><i /><span>03 / live interface</span></div>
+        <div className="sc-window-body">
+          <div className="sc-mini-nav"><span className="sc-mini-logo" /><span className="sc-mini-menu"><i /><i /><i /></span></div>
+          <div className="sc-mini-heading">An idea.<br />An interface.</div><div className="sc-mini-copy" /><div className="sc-mini-copy" /><div className="sc-mini-cta" />
+          <div className="sc-mini-cards">{[1, 2, 3].map(i => <div className="sc-mini-card" key={i}><i /><span /></div>)}</div>
+        </div>
+      </div>
+      <span className="sc-visual-caption">wireframe → code → interface</span>
+    </div>
+  </div>
+}
+
 function DetectionOverlay({ imageUrl, items }) {
   const [size, setSize] = useState({ width: 1, height: 1 })
-  return <div className="relative max-w-xl mx-auto">
-    <img src={imageUrl} alt="Wireframe with component bounds" className="w-full" onLoad={event => setSize({ width: event.target.naturalWidth, height: event.target.naturalHeight })} />
-    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${size.width} ${size.height}`}>
+  return <div className="sc-overlay">
+    <img src={imageUrl} alt="Wireframe with component bounds"  onLoad={event => setSize({ width: event.target.naturalWidth, height: event.target.naturalHeight })} />
+    <svg aria-hidden="true" style={{ pointerEvents: "none" }} viewBox={`0 0 ${size.width} ${size.height}`}>
       {items.map((item, i) => <g key={i}>
         <rect x={item.x1} y={item.y1} width={item.x2-item.x1} height={item.y2-item.y1} fill="none" stroke={item.source === "ocr" ? "#047857" : "#dc2626"} strokeWidth="3" />
         <text x={item.x1} y={Math.max(18, item.y1-5)} fontSize="18" fill="#991b1b" stroke="white" strokeWidth="3" paintOrder="stroke">{item.class} {item.confidence}</text>
