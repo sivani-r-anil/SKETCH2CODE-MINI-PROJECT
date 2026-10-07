@@ -99,6 +99,7 @@ def extract_text_with_links(image_path):
             if visible.sum() > 0 and (saturated & visible).sum()/visible.sum() > .6 and saturated.mean() < .35:
                 item['coloured_text'] = True
     refined.extend(recover_grid_numbers(image, refined))
+    refined.extend(recover_aligned_numbers(image, refined))
     return raw, refined
 
 
@@ -120,26 +121,33 @@ def recover_grid_numbers(image, existing):
     unit = float(np.median(heights))
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     _, ink = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    horizontal = cv2.morphologyEx(ink, cv2.MORPH_OPEN,
-                                 np.ones((1, max(15, round(unit*4))), np.uint8))
-    vertical = cv2.morphologyEx(ink, cv2.MORPH_OPEN,
-                               np.ones((max(15, round(unit*4)), 1), np.uint8))
-    grid = cv2.bitwise_or(horizontal, vertical)
-    # Bridge small pen gaps, while keeping neighbouring cell interiors apart.
-    gap = max(2, round(unit*.12))
-    grid = cv2.morphologyEx(grid, cv2.MORPH_CLOSE, np.ones((gap, gap), np.uint8))
-    contours, _ = cv2.findContours(grid, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    cells = []
-    for contour in contours:
-        x, y, w, h = cv2.boundingRect(contour)
-        if (1.2*unit <= w <= 18*unit and 1.2*unit <= h <= 5*unit
-                and cv2.contourArea(contour) >= w*h*.8):
-            cells.append((x, y, w, h))
-    # A row must contain at least three aligned cell interiors. This excludes
-    # isolated inputs, cards and most pagination/button outlines.
-    cells = [c for c in cells if sum(
-        abs(d[1]-c[1]) < unit*.3 and abs(d[3]-c[3]) < unit*.3
-        for d in cells) >= 3]
+    def grid_cells(line_ink):
+        horizontal = cv2.morphologyEx(line_ink, cv2.MORPH_OPEN,
+                                     np.ones((1, max(15, round(unit*4))), np.uint8))
+        vertical = cv2.morphologyEx(line_ink, cv2.MORPH_OPEN,
+                                   np.ones((max(15, round(unit*4)), 1), np.uint8))
+        grid = cv2.bitwise_or(horizontal, vertical)
+        gap = max(2, round(unit*.12))
+        grid = cv2.morphologyEx(grid, cv2.MORPH_CLOSE, np.ones((gap, gap), np.uint8))
+        contours, _ = cv2.findContours(grid, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        cells = []
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
+            if (1.2*unit <= w <= 18*unit and 1.2*unit <= h <= 5*unit
+                    and cv2.contourArea(contour) >= w*h*.8):
+                cells.append((x, y, w, h))
+        # Several aligned closed cells are required, not isolated form controls.
+        return [c for c in cells if sum(
+            abs(d[1]-c[1]) < unit*.3 and abs(d[3]-c[3]) < unit*.3
+            for d in cells) >= 3]
+
+    cells = grid_cells(ink)
+    if not cells:
+        # Slightly slanted hand-drawn lines can disappear under a long, thin
+        # opening kernel. Thicken only the grid-analysis copy as a fallback.
+        # Glyph crops below still use the untouched original image and ink.
+        thickness = max(3, min(9, round(unit*.14))) | 1
+        cells = grid_cells(cv2.dilate(ink, np.ones((thickness, thickness), np.uint8)))
     columns = []
     for cell in sorted(cells):
         group = next((g for g in columns if abs(g[0][0]-cell[0]) < unit*.3
@@ -258,6 +266,78 @@ def recover_grid_numbers(image, existing):
     return additions
 
 
+def recover_aligned_numbers(image, existing):
+    """Reread isolated ink above captions in an established row of counters.
+
+    Geometry proposes a crop; two unrestricted EasyOCR readings must agree.
+    No sequence, caption vocabulary or expected numeric value is assumed.
+    """
+    import cv2
+    import re
+    numeric = re.compile(r'[0-9]+(?:[.,][0-9]+)*%?')
+    def bounds(o):
+        return (min(p[0] for p in o['box']), min(p[1] for p in o['box']),
+                max(p[0] for p in o['box']), max(p[1] for p in o['box']))
+    numbers = [bounds(o) for o in existing if numeric.fullmatch(o['text'].strip())]
+    if len(numbers) < 2:
+        return []
+    captions = [bounds(o) for o in existing if sum(c.isalpha() for c in o['text']) >= 4]
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    _, ink = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    _, _, stats, _ = cv2.connectedComponentsWithStats(ink)
+    additions = []
+    attempts = 0
+    for x, y, w, h, pixels in stats[1:]:
+        x, y, w, h = map(int, (x, y, w, h))
+        if h < 8 or not .15 <= w/max(1, h) <= 1.3 or pixels < w*h*.08:
+            continue
+        # Already-read text, icons and controls must not be read a second time.
+        if any(max(0, min(x+w, r)-max(x, l))*max(0, min(y+h, b)-max(y, t))
+               > .1*w*h for l, t, r, b in map(bounds, existing)):
+            continue
+        peers = [(l, t, r, b) for l, t, r, b in numbers
+                 if .65*h <= b-t <= 1.6*h
+                 and abs((t+b)/2-(y+h/2)) < .35*h
+                 and (r < x-2*h or l > x+w+2*h)]
+        if len(peers) < 2:
+            continue
+        # The candidate lies within a supported number row and has its own
+        # caption below it, aligned to the left like the neighbouring counters.
+        if not min(l for l, _, _, _ in peers) < x < max(r for _, _, r, _ in peers):
+            continue
+        def has_caption(l, t, r, b):
+            unit = b-t
+            return any(abs(a-l) < .4*unit and 0 <= c-b <= 1.2*unit
+                       and d-a > max(r-l, unit) for a, c, d, _ in captions)
+        if not has_caption(x, y, x+w, y+h) or sum(has_caption(*p) for p in peers) < 2:
+            continue
+        attempts += 1
+        pad = max(4, round(h*.25))
+        crop = gray[y:y+h, x:x+w]
+        readings = []
+        for factor in (3, 4):
+            enlarged = cv2.resize(crop, None, fx=factor, fy=factor, interpolation=cv2.INTER_CUBIC)
+            enlarged = cv2.copyMakeBorder(enlarged, pad*factor, pad*factor, pad*factor, pad*factor,
+                                          cv2.BORDER_CONSTANT, value=255)
+            found = get_reader().recognize(enlarged, detail=1, paragraph=False)
+            if len(found) != 1:
+                break
+            _, text, confidence = found[0]
+            text = text.strip()
+            if not numeric.fullmatch(text) or float(confidence) < .8:
+                break
+            readings.append((text, float(confidence)))
+        if len(readings) == 2 and readings[0][0] == readings[1][0]:
+            additions.append({'text': readings[0][0],
+                              'confidence': round(min(c for _, c in readings), 3),
+                              'box': [[x, y], [x+w, y], [x+w, y+h], [x, y+h]],
+                              'source': 'ocr-aligned-number-retry'})
+        # Bound extra recognition work on dense sketches.
+        if attempts >= 12:
+            break
+    return additions
+
+
 def same_text(original, pieces):
     """Reject rereads that drop text; allow limited glyph substitutions."""
     import re
@@ -309,11 +389,16 @@ def split_colour_run(image, item):
         for edge in (a,b):
             if edge < h*.3 or w-edge < h*.3:
                 continue
-            candidates = np.flatnonzero(blank[max(0,int(edge-h*.5)):min(w,int(edge+h*.5))])
-            if not len(candidates):
+            # A one-pixel inter-letter gap is not a boundary between words.
+            # Require whitespace wide enough for a word gap before rereading.
+            starts = np.flatnonzero(np.diff(np.r_[False, blank, False].astype(int)) == 1)
+            ends = np.flatnonzero(np.diff(np.r_[False, blank, False].astype(int)) == -1)
+            candidates = [int((a+b)//2) for a,b in zip(starts, ends)
+                          if b-a >= max(3, h*.15)
+                          and abs((a+b)/2-edge) <= h*.5]
+            if not candidates:
                 return [item]
-            candidates += max(0,int(edge-h*.5))
-            cuts.add(int(min(candidates, key=lambda v: abs(v-edge))))
+            cuts.add(min(candidates, key=lambda v: abs(v-edge)))
     cuts = sorted(cuts)
     if len(cuts) < 3:
         return [item]
@@ -330,7 +415,9 @@ def split_colour_run(image, item):
         hint = any(min(b,r)-max(a,l) > (b-a)*.5 for l,r in spans)
         for box,text,confidence in results:
             pieces.append({'text': text, 'confidence': round(float(confidence),3),
-                           'box': [[int(pt[0])+left,int(pt[1])+top] for pt in box],
+                           'box': [[int(pt[0]+left), int(pt[1]+top)] for pt in box],
                            'source': 'ocr-colour-crop', 'separate_run': True,
                            'link_hint': hint})
-    return pieces if same_text(item['text'],pieces) else [item]
+    return pieces if (same_text(item['text'], pieces)
+                      and ''.join(ch.casefold() for ch in item['text'] if ch.isalnum())
+                      == ''.join(ch.casefold() for p in pieces for ch in p['text'] if ch.isalnum())) else [item]

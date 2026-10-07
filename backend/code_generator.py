@@ -120,6 +120,16 @@ def action_icon(name):
             + paths[name] + '</svg>')
 
 
+def inline_artwork(c):
+    """Render an upstream crop without inferring a brand or icon from its label."""
+    src = image_source({'image_src': c.get('icon_image_src')})
+    if not src:
+        return ''
+    size = 'h-6 w-6' if c.get('class') == 'Button' else 'h-8 w-8'
+    return ('<img src={' + js(src) + '} alt="" aria-hidden="true" '
+            'className="' + size + ' shrink-0 object-contain" />')
+
+
 def generate_component(c):
     kind = c.get('class', '')
     text = ' '.join(c.get('texts', [])).strip()
@@ -134,6 +144,10 @@ def generate_component(c):
     if kind == 'Subheading':
         return f'<h2 className="text-lg font-semibold text-[var(--s2c-text)]" style={{{{textAlign: {js(align)}}}}}>{value}</h2>'
     if kind == 'Paragraph':
+        artwork = inline_artwork(c)
+        if artwork:
+            return ('<p className="flex min-w-0 items-center gap-3 text-sm text-[var(--s2c-muted)]">'
+                    + artwork + '<span className="min-w-0">' + value + '</span></p>')
         return f'<p className="text-sm text-[var(--s2c-muted)]" style={{{{textAlign: {js(align)}}}}}>{value}</p>'
     if kind == 'Label':
         return f'<label htmlFor={{{js(c.get("for_id", ""))}}} className="block text-sm font-medium text-[var(--s2c-text)]">{value}</label>'
@@ -161,19 +175,25 @@ def generate_component(c):
                 'text-[var(--s2c-text)] hover:bg-[var(--s2c-soft-hover)] transition-colors '
                 + focus + '">' + action_icon(c['icon']) + '</button>')
     if kind == 'Button' and c.get('filled'):
-        content = (profile_icon() + value) if c.get('icon') == 'profile' else value
-        icon_classes = 'inline-flex items-center justify-center gap-2 ' if c.get('icon') == 'profile' else ''
+        artwork = profile_icon() if c.get('icon') == 'profile' else inline_artwork(c)
+        content = artwork + '<span className="min-w-0">' + value + '</span>' if artwork else value
+        icon_classes = 'inline-flex items-center justify-center gap-2 ' if artwork else ''
         return f'<button type="button" className="s2c-primary {icon_classes}w-full rounded-lg bg-[var(--s2c-accent)] text-[var(--s2c-on-accent)] px-4 py-3 font-medium hover:bg-[var(--s2c-accent-hover)] transition-colors {focus}">{content}</button>'
     if kind == 'Button':
         content = value if text else 'Button'
         icon_classes = ''
-        if c.get('icon') == 'profile':
-            content = profile_icon() + content
+        artwork = profile_icon() if c.get('icon') == 'profile' else inline_artwork(c)
+        if artwork:
+            content = artwork + '<span className="min-w-0">' + content + '</span>'
             icon_classes = 'inline-flex items-center justify-center gap-2 '
         return f'<button type="button" className="{icon_classes}w-full border border-[var(--s2c-border)] bg-[var(--s2c-soft)] hover:bg-[var(--s2c-soft-hover)] rounded-lg px-4 py-3 font-medium transition-colors {focus}">{content}</button>'
     if kind in {'Check Box', 'Radio Button'}:
         input_type = 'checkbox' if kind == 'Check Box' else 'radio'
-        return f'<label className="inline-flex items-center gap-2 text-sm cursor-pointer"><input type="{input_type}" name={{{js(c.get("group", "choice"))}}} className="w-4 h-4 shrink-0 accent-[var(--s2c-accent)] {focus}" /><span>{value}</span></label>'
+        # Use an initial state, not a controlled `checked` prop: the generated
+        # control must remain editable without requiring a React state handler.
+        # Missing or ambiguous evidence preserves the previous unchecked output.
+        initial_state = ' defaultChecked={true}' if c.get('checked') is True else ''
+        return f'<label className="inline-flex items-center gap-2 text-sm cursor-pointer"><input type="{input_type}" name={{{js(c.get("group", "choice"))}}}{initial_state} className="w-4 h-4 shrink-0 accent-[var(--s2c-accent)] {focus}" /><span>{value}</span></label>'
     if kind == 'Link':
         return f'<a href="#" className="text-sm text-[var(--s2c-accent)] underline underline-offset-4 rounded-sm {focus}">{value}</a>'
     if kind == 'Textarea':
@@ -438,7 +458,7 @@ def _render_stat_card(node, scale):
     return ('<section data-layout-kind="stat-card" className="flex min-w-0 min-h-36 '
             'items-center gap-4 rounded-xl border border-[var(--s2c-border)] '
             'bg-[var(--s2c-surface)] p-6 shadow-sm">' + artwork
-            + '<div className="min-w-0"><p className="text-3xl font-semibold '
+            + '<div className="min-w-0"><p className="text-4xl sm:text-5xl font-medium '
             'leading-tight tabular-nums text-[var(--s2c-text)]">{' + js(value) + '}</p>'
             '<p className="mt-2 text-sm leading-6 text-[var(--s2c-muted)]">{'
             + js(label) + '}</p></div></section>')
@@ -536,7 +556,7 @@ def render_layout_tree(node, scale):
         if card_row:
             # Preserve inferred proportions on desktop; use readable card widths
             # on smaller viewports. The card count comes from the layout tree.
-            classes += 's2c-card-row grid-cols-1 sm:grid-cols-2 lg:grid-cols-[var(--s2c-tracks)] items-stretch'
+            classes += 's2c-card-row pb-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[var(--s2c-tracks)] items-stretch'
         elif kind == 'columns':
             classes += 'grid-cols-1 md:grid-cols-[var(--s2c-tracks)]'
         else:
@@ -560,8 +580,14 @@ def render_layout_tree(node, scale):
     width = max(1, node['x2']-node['x1'])
     bottom = node['y1']
     parts = ['<div data-layout-kind="stack" className="flex min-w-0 flex-col">']
-    for child in children:
+    for index, child in enumerate(children):
         gap = round(min(64, max(0, child['y1']-bottom)*scale))
+        # OCR boxes may touch even when a title and its supporting sentence
+        # should breathe. Apply a small semantic minimum without moving groups.
+        previous = children[index-1] if index else {}
+        if (previous.get('component', {}).get('class') in {'Heading', 'Subheading'}
+                and child.get('component', {}).get('class') == 'Paragraph'):
+            gap = max(8, gap)
         bottom = max(bottom, child['y2'])
         if _centered_title_group(child, node):
             title, subtitle = child['children']

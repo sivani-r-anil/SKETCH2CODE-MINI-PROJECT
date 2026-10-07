@@ -168,12 +168,61 @@ def _axis_groups(nodes, axis):
     return groups
 
 
+def _adjacent_panels(nodes):
+    """Tolerate slight outline overlap between independent sibling panels."""
+    if len(nodes) < 2 or not all(n['kind'] == 'container' for n in nodes):
+        return []
+    ordered = sorted(nodes, key=lambda n: n['x1'])
+    for a, b in zip(ordered, ordered[1:]):
+        width = min(a['x2']-a['x1'], b['x2']-b['x1'])
+        height = min(a['y2']-a['y1'], b['y2']-b['y1'])
+        overlap = min(a['y2'], b['y2'])-max(a['y1'], b['y1'])
+        if (width <= 0 or height <= 0 or overlap < .7*height
+                or not -.06*width <= b['x1']-a['x2'] <= .04*width):
+            return []
+    return [[n] for n in ordered]
+
+
+def _horizontal_fields(nodes):
+    """Keep repeated left-caption/control pairs atomic before column cuts."""
+    pairs = []
+    used = set()
+    for control in nodes:
+        c = control.get('component', {})
+        if control['kind'] != 'component' or c.get('class') not in CONTROL_CLASSES:
+            continue
+        height = max(1, control['y2']-control['y1'])
+        labels = [n for n in nodes if n['kind'] == 'component'
+                  and n.get('component', {}).get('class') in {'Label', 'Paragraph'}
+                  and n.get('component', {}).get('texts')
+                  and 0 <= control['x1']-n['x2'] <= 3*height
+                  and n['x2']-n['x1'] <= .6*(control['x2']-control['x1'])
+                  and min(n['y2'], control['y2'])-max(n['y1'], control['y1'])
+                      >= .7*(n['y2']-n['y1'])]
+        if len(labels) == 1:
+            pairs.append((labels[0], control))
+    accepted = []
+    for label, control in pairs:
+        h = max(1, control['y2']-control['y1'])
+        peers = [(a, b) for a, b in pairs if b is not control
+                 and abs(b['x1']-control['x1']) <= .3*h
+                 and abs(a['x1']-label['x1']) <= .3*h
+                 and abs(b['y1']-control['y1']) >= h]
+        if peers and id(label) not in used and id(control) not in used:
+            accepted.append(_group('row', [label, control], role='form-row'))
+            used.update((id(label), id(control)))
+    return [n for n in nodes if id(n) not in used]+accepted
+
+
 def _column_groups(nodes):
     if len(nodes) < 2:
         return []
     bounds = _bounds(nodes)
     width = max(1, bounds['x2']-bounds['x1'])
     height = max(1, bounds['y2']-bounds['y1'])
+    panels = _adjacent_panels(nodes)
+    if panels:
+        return panels
     groups = _axis_groups(nodes, 'x')
     # A persistent narrow gutter can separate dense panels. Require both
     # sides to span most of the region, with several items and substantial width.
@@ -355,8 +404,49 @@ def _content_titles(nodes, card=False):
     return lines
 
 
+def _container_rows(nodes):
+    """Keep aligned sibling cards atomic before searching for page-wide cuts.
+
+    Small handwriting overlaps above a card row must not cause each card to
+    fall into the ambiguous vertical-stack fallback. Geometry and explicit
+    card containers are the evidence; no text or fixed column count is used.
+    """
+    cards = sorted([n for n in nodes if n.get('kind') == 'container'
+                    and n.get('container_class') == 'Card'], key=lambda n: (n['y1'], n['x1']))
+    used = set()
+    rows = []
+    for card in cards:
+        if id(card) in used:
+            continue
+        height = max(1, card['y2']-card['y1'])
+        peers = [n for n in cards if id(n) not in used
+                 and .75*height <= n['y2']-n['y1'] <= 1.33*height
+                 and min(n['y2'], card['y2'])-max(n['y1'], card['y1']) >= .75*height]
+        peers.sort(key=lambda n: n['x1'])
+        if len(peers) < 2 or any(a['x2'] > b['x1'] for a, b in zip(peers, peers[1:])):
+            continue
+        bounds = _bounds(peers)
+        # Do not enclose unrelated text/controls occupying the spaces between
+        # these cards. Slight boundary noise from a nearby heading is allowed.
+        peer_ids = {id(n) for n in peers}
+        obstructed = False
+        for n in nodes:
+            if id(n) in peer_ids:
+                continue
+            overlap = max(0, min(n['x2'], bounds['x2'])-max(n['x1'], bounds['x1']))
+            overlap *= max(0, min(n['y2'], bounds['y2'])-max(n['y1'], bounds['y1']))
+            if overlap/max(1, _area(n)) > .2:
+                obstructed = True
+                break
+        if not obstructed:
+            rows.append(_group('row', peers, role='card-row'))
+            used.update(peer_ids)
+    return [n for n in nodes if id(n) not in used]+rows if rows else nodes
+
+
 def _spatial_tree(nodes, depth=0, prefer_rows=False):
-    nodes = sorted(_content_titles(nodes), key=lambda n: (n['y1'], n['x1']))
+    nodes = sorted(_horizontal_fields(_content_titles(nodes)),
+                   key=lambda n: (n['y1'], n['x1']))
     if not nodes:
         return _group('stack', [])
     if len(nodes) == 1:
@@ -371,6 +461,15 @@ def _spatial_tree(nodes, depth=0, prefer_rows=False):
     # A common horizontal band is a row, even when it contains three buttons.
     common = min(n['y2'] for n in nodes)-max(n['y1'] for n in nodes)
     disjoint = len(_axis_groups(nodes, 'x')) == len(nodes)
+    # OCR prose and its inline link may touch or overlap by a few pixels.
+    # Allow only small boundary noise between text leaves on a shared baseline;
+    # keep controls, containers and genuinely overlapping regions unchanged.
+    text_nodes = sorted(nodes, key=lambda n: n['x1'])
+    if (not disjoint and all(n.get('kind') == 'component'
+            and n.get('component', {}).get('class') in
+                {'Paragraph', 'Label', 'Link', 'Heading', 'Subheading'} for n in text_nodes)):
+        disjoint = all(b['x1']-a['x2'] >= -.15*min(a['y2']-a['y1'], b['y2']-b['y1'])
+                       for a, b in zip(text_nodes, text_nodes[1:]))
     if disjoint and common >= .35*min(n['y2']-n['y1'] for n in nodes):
         children = sorted(nodes, key=lambda n: n['x1'])
         classes = [n.get('component', {}).get('class') for n in children]
@@ -397,7 +496,7 @@ def _spatial_tree(nodes, depth=0, prefer_rows=False):
         children = [_spatial_tree(group, depth+1) for group in columns]
         return _group('columns', children,
                       widths=[c['x2']-c['x1'] for c in children],
-                      gaps=[b['x1']-a['x2'] for a, b in zip(children, children[1:])])
+                      gaps=[max(0, b['x1']-a['x2']) for a, b in zip(children, children[1:])])
 
     # A spanning header/footer blocks a vertical cut. Isolate horizontal bands
     # only where no component crosses the boundary, then examine each section.
@@ -413,8 +512,65 @@ def _spatial_tree(nodes, depth=0, prefer_rows=False):
         return _group('stack', children,
                       gaps=[b['y1']-a['y2'] for a, b in zip(children, children[1:])])
 
+    # Preserve established card rows when slight border/text overlap prevents
+    # a clean page-wide cut. Leave already successful partitions unchanged.
+    grouped = _container_rows(nodes)
+    if len(grouped) < len(nodes):
+        return _spatial_tree(grouped, depth+1, prefer_rows)
+
     # Ambiguous overlapping boxes are retained, not silently discarded.
     return _group('stack', nodes, reason='No unambiguous whitespace cut.')
+
+
+def _cell_column_slots(evidence, rows, anchors, bounds, height):
+    """Use repeated compact cell boxes when OCR fragments over-split columns."""
+    groups = []
+    for cell in sorted(evidence, key=lambda n: (n['x1']+n['x2'])/2):
+        center = (cell['x1']+cell['x2'])/2
+        match = next((g for g in groups if abs(center-median(
+            (p['x1']+p['x2'])/2 for p in g)) < height), None)
+        if match is None:
+            groups.append([cell])
+        else:
+            match.append(cell)
+    slots = []
+    for group in groups:
+        row_ids = {min(range(len(rows)), key=lambda i: abs(
+            (n['y1']+n['y2'])/2-median((o['y1']+o['y2'])/2 for o in rows[i])))
+            for n in group}
+        if len(row_ids) >= 3:
+            slots.append({'x1': median(n['x1'] for n in group),
+                          'x2': median(n['x2'] for n in group)})
+    if len(slots) < 3:
+        return None
+    # Keep sparse outer columns, such as row identifiers or an action heading.
+    for anchor in anchors:
+        left = min(o['x1'] for _, o in anchor)
+        right = max(o['x2'] for _, o in anchor)
+        if right < slots[0]['x1']-height*.4 or left > slots[-1]['x2']+height*.4:
+            slots.append({'x1': left, 'x2': right})
+            slots.sort(key=lambda n: n['x1'])
+    if len(slots) >= len(anchors) or any(
+            b['x1'] <= a['x2'] for a, b in zip(slots, slots[1:])):
+        return None
+    edges = [bounds['x1']] + [(a['x2']+b['x1'])/2
+             for a, b in zip(slots, slots[1:])] + [bounds['x2']]
+    proposed = [[] for _ in slots]
+    for row_index, row in enumerate(rows):
+        for word in row:
+            center = (word['x1']+word['x2'])/2
+            col = next((i for i in range(len(slots))
+                        if edges[i] <= center <= edges[i+1]), None)
+            if col is None:
+                return None
+            # A phrase crossing a proposed divider is evidence against it.
+            overlap = min(word['x2'], edges[col+1])-max(word['x1'], edges[col])
+            if overlap < .8*max(1, word['x2']-word['x1']):
+                return None
+            proposed[col].append((row_index, word))
+    if any(not col for col in proposed):
+        return None
+    return proposed, edges
 
 
 def _table_groups(leaves):
@@ -553,6 +709,10 @@ def _table_groups(leaves):
         edges = [bounds['x1']] + [
             (max(p['x2'] for _, p in left)+min(p['x1'] for _, p in right))/2
             for left, right in zip(anchors, anchors[1:])] + [bounds['x2']]
+        cell_slots = _cell_column_slots(evidence, rows, anchors, bounds, height)
+        if cell_slots is not None:
+            anchors, edges = cell_slots
+            starts = [median(p['x1'] for _, p in a) for a in anchors]
         if any(b <= a for a, b in zip(edges, edges[1:])):
             continue  # Ambiguous overlapping columns: retain original evidence.
         row_nodes = []

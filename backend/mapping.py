@@ -46,6 +46,23 @@ def prepare_regions(detections, text_items, rectangles, markers):
                     and area(d) < area(c)*.65
                     and intersection(c, d)/max(1, area(d)) > .9]
         runs = reading_order([o for o in text_items if intersection(c, o)/max(1, area(o)) > .6])
+        # A partial header prediction can cover only branding and the first
+        # link. Validate it against independently detected links on that band.
+        band_links = [d for d in detections if d['class'] == 'Link'
+                      and (d.get('confidence') or 0) >= .4
+                      and min(d['y2'], c['y2'])-max(d['y1'], c['y1'])
+                          >= .7*(d['y2']-d['y1'])]
+        if (c['class'] == 'Button' and not c.get('outline')
+                and (c.get('confidence') or 0) < .4
+                and c['x2']-c['x1'] > 5*(c['y2']-c['y1'])
+                and len(band_links) >= 3 and len(runs) >= 2
+                and c['y1'] <= min((o['y1'] for o in text_items), default=c['y1'])
+                and any(b['x1']-a['x2'] > 3*min(a['y2']-a['y1'], b['y2']-b['y1'])
+                        for a,b in zip(sorted(runs,key=lambda o:o['x1']),
+                                       sorted(runs,key=lambda o:o['x1'])[1:]))
+                and any(intersection(c,d)/max(1,area(d)) >= .9 for d in band_links)):
+            removed.add(i)
+            continue
         # A header border is also a rectangle. It is not evidence that a whole
         # navigation bar is a button. Require an enclosed image/logo region and
         # several independent captions on one baseline before overriding it.
@@ -65,6 +82,25 @@ def prepare_regions(detections, text_items, rectangles, markers):
         navigation_runs = [o for o in runs if not any(
             child['class'] not in TEXT_CLASSES
             and intersection(o, child)/max(1, area(o)) > .6 for _, child in children)]
+        # Header candidates are checked for a shared baseline below. Order
+        # them horizontally first: a taller handwritten brand can otherwise
+        # become a separate OCR row and appear after the navigation items.
+        navigation_runs.sort(key=lambda o: o['x1'])
+        # OCR colour retries may split a large word into overlapping pieces.
+        # Evaluate those pieces as one caption, keeping their original records.
+        navigation_groups = []
+        for run in navigation_runs:
+            if (navigation_groups and run.get('fragment_group') is not None
+                    and navigation_groups[-1].get('fragment_group') == run['fragment_group']):
+                previous = navigation_groups[-1]
+                for key in ('x1', 'y1'):
+                    previous[key] = min(previous[key], run[key])
+                for key in ('x2', 'y2'):
+                    previous[key] = max(previous[key], run[key])
+                previous['fragment_ids'].append(run['ocr_id'])
+            else:
+                navigation_groups.append({**run, 'fragment_ids': [run['ocr_id']]})
+        navigation_runs = navigation_groups
         navigation_height = median([o['y2']-o['y1'] for o in navigation_runs]) if navigation_runs else 1
         page_top = min((o['y1'] for o in text_items), default=c['y1'])
         text_brand_navigation = (
@@ -102,7 +138,7 @@ def prepare_regions(detections, text_items, rectangles, markers):
                                     'confidence': trailing.get('confidence', 0),
                                     'corrections': ['Separated trailing header action after supported navigation links.']})
                     links = links[:-1]
-            nav_text_ids.update(o['ocr_id'] for o in links)
+            nav_text_ids.update(i for o in links for i in o['fragment_ids'])
             continue
         if outlined_navigation:
             removed.add(i)
@@ -217,6 +253,31 @@ def consolidate_repeated_cards(detections, text_items, containers):
                 0 <= b['x1']-a['x2'] <= .6*w
                 for (a, _), (b, _) in zip(peers, peers[1:])):
             accepted.append((r, matches))
+    # Once a repeated row is independently established, use its columns to
+    # recognize adjacent rows with weaker OCR. Do not require every card to
+    # contain a readable number: missing text must not destroy its container.
+    established = list(accepted)
+    for r in containers or []:
+        if any(r == q for q, _ in accepted):
+            continue
+        w, h = r['x2']-r['x1'], r['y2']-r['y1']
+        runs = [o for o in text_items if intersection(r, o)/max(1, area(o)) > .95]
+        if not runs:
+            continue
+        aligned = [q for q, _ in established
+                   if .8*w <= q['x2']-q['x1'] <= 1.25*w
+                   and .8*h <= q['y2']-q['y1'] <= 1.25*h
+                   and abs(q['x1']-r['x1']) < .1*w
+                   and 0 <= r['y1']-q['y2'] <= .6*h]
+        row_peers = [q for q in containers or []
+                     if .8*w <= q['x2']-q['x1'] <= 1.25*w
+                     and .8*h <= q['y2']-q['y1'] <= 1.25*h
+                     and abs(q['y1']-r['y1']) < .2*h]
+        row_peers.sort(key=lambda q: q['x1'])
+        if (aligned and len(row_peers) >= 3 and all(
+                0 <= b['x1']-a['x2'] <= .6*w
+                for a, b in zip(row_peers, row_peers[1:]))):
+            accepted.append((r, []))
     for r, matches in accepted:
         primary = matches[0] if matches else {**r, 'class': 'Card',
                    'confidence': None, 'source': 'opencv+ocr+geometry'}
@@ -351,8 +412,92 @@ def clean_region_evidence(detections, text_items, rectangles, containers):
     return kept
 
 
+def consolidate_pagination(components):
+    """Combine overlapping widget predictions and nearby numeric OCR runs."""
+    widgets = [c for c in components if c['class'] == 'Pagination']
+    if not widgets:
+        return components
+    consumed = set()
+    result = []
+    for widget in widgets:
+        if widget['id'] in consumed:
+            continue
+        group = [widget]
+        consumed.add(widget['id'])
+        changed = True
+        while changed:
+            changed = False
+            for other in widgets:
+                if other['id'] in consumed:
+                    continue
+                if any(min(c['y2'], other['y2'])-max(c['y1'], other['y1'])
+                       >= .6*min(c['y2']-c['y1'], other['y2']-other['y1'])
+                       and min(c['x2'], other['x2'])-max(c['x1'], other['x1'])
+                       >= .3*min(c['x2']-c['x1'], other['x2']-other['x1'])
+                       for c in group):
+                    group.append(other)
+                    consumed.add(other['id'])
+                    changed = True
+        bounds = {k: (min if k in ('x1', 'y1') else max)(c[k] for c in group)
+                  for k in ('x1', 'y1', 'x2', 'y2')}
+        h = max(1, bounds['y2']-bounds['y1'])
+        captions = [c for c in components if c['id'] not in consumed
+                    and c['class'] in {'Paragraph', 'Label', 'Link', 'Subheading'}
+                    and re.fullmatch(r'(?:[0-9]{1,4}|\.{3}|…)', ' '.join(c.get('texts', [])).strip())
+                    and abs((c['y1']+c['y2']-bounds['y1']-bounds['y2'])/2) < .45*h
+                    and c['x1'] >= bounds['x1']-1.5*h
+                    and c['x2'] <= bounds['x2']+1.5*h]
+        if len(group) == 1 and not captions:
+            result.append(widget)
+            continue
+        group.extend(captions)
+        consumed.update(c['id'] for c in captions)
+        combined = deepcopy(widget)
+        combined.update({k: (min if k in ('x1', 'y1') else max)(c[k] for c in group)
+                         for k in ('x1', 'y1', 'x2', 'y2')})
+        words = {o['ocr_id']: o for c in group for o in c.get('ocr', [])}
+        combined['ocr'] = sorted(words.values(), key=lambda o: o['x1'])
+        combined['texts'] = [o.get('display_text', o['text']) for o in combined['ocr']]
+        # Preserve captions supplied by a detector even if OCR metadata is absent.
+        for c in sorted(group, key=lambda c: c['x1']):
+            if not c.get('ocr'):
+                combined['texts'].extend(c.get('texts', []))
+        combined['source'] = 'pagination-geometry'
+        combined.setdefault('corrections', []).append(
+            'Overlapping pagination boxes consolidated with adjacent numeric OCR captions.')
+        result.append(combined)
+    return reading_order([c for c in components if c['id'] not in consumed] + result)
+
+
 def map_text_to_components(detections, ocr_texts, markers=None, rectangles=None, containers=None):
     text_items = [{**o, **text_box(o), 'ocr_id': i} for i, o in enumerate(ocr_texts)]
+    # A tall word can be split by colour-crop OCR into an initial character
+    # and an overlapping remainder. A retry's link hint alone must not turn
+    # half that heading into a link. Real underlines/colours/YOLO links win.
+    typical = median([o['y2']-o['y1'] for o in text_items]) if text_items else 1
+    ordered_fragments = sorted(text_items, key=lambda o: o['x1'])
+    for a in ordered_fragments:
+        if (a.get('source') != 'ocr-colour-crop' or len(a['text'].strip()) != 1
+                or a['y2']-a['y1'] < typical*1.4):
+            continue
+        following = [b for b in ordered_fragments if b is not a
+                     and b.get('source') == 'ocr-colour-crop'
+                     and b['x1'] > a['x1'] and len(b['text'].strip()) > 1
+                     and -.25*typical <= b['x1']-a['x2'] <= 0
+                     and b['y2']-b['y1'] >= typical*1.4
+                     and abs((a['y1']+a['y2']-b['y1']-b['y2'])/2) < typical*.5]
+        if len(following) != 1:
+            continue
+        pair = [a, following[0]]
+        if any(o.get('underlined') or o.get('coloured_text') or any(
+                d['class'] == 'Link' and (d.get('confidence') or 0) >= .4
+                and intersection(d, o)/max(1, area(o)) >= .6 for d in detections)
+                for o in pair):
+            continue
+        for o in pair:
+            o['fragment_group'] = a['ocr_id']
+            o['link_hint'] = False
+            o['separate_run'] = False
     # A coloured fragment needs inline context; colour alone is not a link.
     # Propagate that evidence across neighbouring fragments of the same run.
     pending = [o for o in text_items if o.get('coloured_text')]
@@ -379,6 +524,28 @@ def map_text_to_components(detections, ocr_texts, markers=None, rectangles=None,
     detections = recover_text_panels(detections, text_items, containers)
     detections = clean_region_evidence(detections, text_items, rectangles, containers)
     detections, nav_text_ids = prepare_regions(detections, text_items, rectangles, markers)
+    # Duplicate checkbox predictions may extend over different portions of
+    # one caption. A shared physical square is stronger evidence than box IoU.
+    assigned_toggles = {}
+    deduplicated = []
+    for d in detections:
+        anchors = [(i,m) for i,m in enumerate(markers or []) if m.get('square')
+                   and d['class'] == 'Check Box'
+                   and intersection(d,m)/max(1,area(m)) > .9
+                   and m['x1']-d['x1'] < (m['x2']-m['x1'])*.6]
+        if len(anchors) != 1:
+            deduplicated.append(d)
+            continue
+        key = anchors[0][0]
+        if key not in assigned_toggles:
+            assigned_toggles[key] = len(deduplicated)
+            deduplicated.append(dict(d))
+        else:
+            previous = deduplicated[assigned_toggles[key]]
+            previous.update({k:(min if k in ('x1','y1') else max)(previous[k],d[k])
+                             for k in ('x1','y1','x2','y2')})
+            previous.setdefault('corrections', []).append('Predictions sharing one square toggle consolidated.')
+    detections = deduplicated
     mapped = [{**d, 'id': f'component-{i}', 'source': d.get('source', 'yolo'), 'texts': [], 'ocr': []}
               for i, d in enumerate(detections)]
     unmatched = []
@@ -499,6 +666,15 @@ def map_text_to_components(detections, ocr_texts, markers=None, rectangles=None,
             and abs((p['x1']+p['x2']-line_left-line_right)/2)
                 < .3*max(p['x2']-p['x1'], line_right-line_left)
             for p in text_items)
+        # Handwriting can tilt a subtitle box into the title above it.
+        # Require a smaller, wider, left-aligned line rather than exact words.
+        supporting_text = supporting_text or any(
+            p['ocr_id'] != o['ocr_id'] and p['y1'] < o['y1']
+            and p['y2']-p['y1'] >= text_height/ .75
+            and -.45*text_height <= o['y1']-p['y2'] <= text_height
+            and abs(p['x1']-line_left) <= .5*text_height
+            and line_right-line_left >= 1.2*(p['x2']-p['x1'])
+            for p in text_items)
         if nearby and not (o.get('underlined') or o.get('link_hint')):
             kind = 'Label'
         elif o.get('underlined') or o.get('link_hint') or o['ocr_id'] in nav_text_ids or any(d['class'] == 'Link' and (d.get('confidence') or 0) >= .4
@@ -533,9 +709,16 @@ def map_text_to_components(detections, ocr_texts, markers=None, rectangles=None,
                             for o in c['ocr']+prev['ocr'])
                 and c['class'] == prev['class'] and c.get('for_id') == prev.get('for_id')
                 and abs((c['y1']+c['y2']-prev['y1']-prev['y2'])/2) < .5*min(h, prev['y2']-prev['y1'])
-                and -typical_height*.15 <= c['x1']-prev['x2'] <= typical_height*(.45 if c['class'] == 'Link' else 1.2)):
+                and (-typical_height*.15 <= c['x1']-prev['x2'] <= typical_height*(.45 if c['class'] == 'Link' else 1.2)
+                     or (c['ocr'][0].get('fragment_group') is not None
+                         and c['ocr'][0]['fragment_group'] == prev['ocr'][-1].get('fragment_group')))):
             prev['x2'] = c['x2']; prev['y1'] = min(prev['y1'], c['y1']); prev['y2'] = max(prev['y2'], c['y2'])
-            prev['texts'].extend(c['texts']); prev['ocr'].extend(c['ocr'])
+            if (c['ocr'][0].get('fragment_group') is not None
+                    and c['ocr'][0]['fragment_group'] == prev['ocr'][-1].get('fragment_group')):
+                prev['texts'][-1] += ''.join(c['texts'])
+            else:
+                prev['texts'].extend(c['texts'])
+            prev['ocr'].extend(c['ocr'])
         else:
             merged.append(c)
     for c in merged:
@@ -551,6 +734,38 @@ def map_text_to_components(detections, ocr_texts, markers=None, rectangles=None,
                 c['texts'], c['ocr'] = p['texts'], p['ocr']
                 c['x2'] = p['x2']
                 merged.remove(p)
+    # A toggle prediction may cover only the beginning of its caption.
+    # Extend through adjacent plain OCR runs on the same baseline, never links
+    # or other controls. Use OCR bounds so an oversized YOLO box cannot swallow
+    # a remote column. Preserve every OCR record exactly once.
+    for control in list(merged):
+        if control['class'] not in {'Check Box', 'Radio Button'} or not control.get('ocr'):
+            continue
+        while True:
+            runs = control['ocr']
+            right = max(o['x2'] for o in runs)
+            top, bottom = min(o['y1'] for o in runs), max(o['y2'] for o in runs)
+            height = max(1, median(o['y2']-o['y1'] for o in runs))
+            options = [p for p in merged if p is not control and p['class'] == 'Paragraph'
+                       and p.get('source') == 'ocr' and p.get('ocr')
+                       and -.3*height <= p['x1']-right <= 1.2*height
+                       and min(bottom,p['y2'])-max(top,p['y1']) >= .5*min(height,p['y2']-p['y1'])
+                       and abs((top+bottom-p['y1']-p['y2'])/2) <= .5*height]
+            if not options:
+                break
+            caption = min(options, key=lambda p: p['x1'])
+            competitors = [p for p in merged if p is not control and p['class'] in INPUTS | {'Button', 'Check Box', 'Radio Button'}
+                           and p['x1'] >= right and p['x1'] < caption['x2']
+                           and min(p['y2'],caption['y2']) > max(p['y1'],caption['y1'])]
+            if competitors:
+                break
+            control['texts'].extend(caption['texts'])
+            control['ocr'] = reading_order(control['ocr']+caption['ocr'])
+            control['x2'] = max(control['x2'],caption['x2'])
+            control['y1'] = min(control['y1'],caption['y1'])
+            control['y2'] = max(control['y2'],caption['y2'])
+            control.setdefault('corrections',[]).append('Adjacent same-line OCR retained as part of the toggle caption.')
+            merged.remove(caption)
     # Optional closed outlines need supporting content before becoming cards.
     # Reject the outer page frame, artwork and boxes cutting through siblings.
     content = [c for c in merged if c['class'] not in CONTAINERS]
@@ -568,4 +783,4 @@ def map_text_to_components(detections, ocr_texts, markers=None, rectangles=None,
         merged.append({**r, 'class': 'Card', 'id': f'container-{len(merged)}',
                        'texts': [], 'ocr': [], 'confidence': None, 'source': 'opencv+geometry',
                        'corrections': ['Closed outline enclosing multiple mapped components.']})
-    return merged
+    return consolidate_pagination(merged)
