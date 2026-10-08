@@ -18,11 +18,11 @@ THEMES = {
         'accent-hover': '#bfdbfe', 'on-accent': '#0f172a',
     },
     'blue': {
-        'page': '#bfdbfe', 'surface': '#eff6ff', 'text': '#172554',
-        'muted': '#1e40af', 'border': '#2563eb', 'soft': '#dbeafe',
-        'soft-hover': '#bfdbfe', 'accent': '#1d4ed8',
-        'accent-hover': '#1e40af', 'on-accent': '#ffffff',
-        'wireframe-surface': '#dbeafe',
+        'page': '#152d60', 'surface': '#1c396e', 'text': '#f7f9fc',
+        'muted': '#c8d5e8', 'border': '#7890b4', 'soft': '#25467b',
+        'soft-hover': '#30558a', 'accent': '#b8cbe5',
+        'accent-hover': '#d0dded', 'on-accent': '#152d60',
+        'wireframe-surface': '#193465',
     },
     'purple-gradient': {
         'page': '#c4b5fd', 'surface': '#faf5ff', 'text': '#2e1065',
@@ -35,14 +35,12 @@ THEMES = {
         'accent-hover-image': 'linear-gradient(110deg,#6b21a8,#5b21b6,#3730a3)',
     },
     'ocean-gradient': {
-        'page': '#67e8f9', 'surface': '#ecfeff', 'text': '#083344',
-        'muted': '#285b60', 'border': '#33857f', 'soft': '#ccfbf1',
-        'soft-hover': '#99f6e4', 'accent': '#0b6962',
-        'accent-hover': '#115e59', 'on-accent': '#ffffff',
-        'wireframe-surface': 'rgba(236,254,255,.64)',
-        'page-image': 'linear-gradient(125deg,#7dd3fc 0%,#67e8f9 48%,#5eead4 100%)',
-        'accent-image': 'linear-gradient(110deg,#0e7490,#0f766e,#11665e)',
-        'accent-hover-image': 'linear-gradient(110deg,#155e75,#115e59,#134e4a)',
+        'page': '#102d60', 'surface': '#f4fafb', 'text': '#12344b',
+        'muted': '#3d606e', 'border': '#658995', 'soft': '#e2f0f2',
+        'soft-hover': '#cde5e9', 'accent': '#17677a',
+        'accent-hover': '#125368', 'on-accent': '#ffffff',
+        'wireframe-surface': 'rgba(244,250,251,.96)',
+        'page-image': 'linear-gradient(180deg,#65d0ce 0%,#299ead 35%,#135178 68%,#102d60 100%)',
     },
     'sunset-gradient': {
         'page': '#fed7aa', 'surface': '#fff7ed', 'text': '#431407',
@@ -68,7 +66,7 @@ def theme_css():
                   'accent-hover-image': 'none',
                   'wireframe-surface': tokens['surface'], **tokens}
         declarations = ';'.join(f'--s2c-{key}:{value}' for key, value in values.items())
-        scheme = 'dark' if name == 'dark' else 'light'
+        scheme = 'dark' if name in {'dark', 'blue'} else 'light'
         rules.append(f'.sketch-page[data-sketch-theme="{name}"]{{{declarations};color-scheme:{scheme}}}')
     rules.extend([
         '.sketch-page{background-image:var(--s2c-page-image,none)}',
@@ -120,12 +118,108 @@ def action_icon(name):
             + paths[name] + '</svg>')
 
 
+# Pinned Lucide 0.468.0 SVG paths, shared by its React icon package.
+# https://github.com/lucide-icons/lucide/tree/0.468.0/icons
+LUCIDE_LICENSE = 'ISC License\n\nCopyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.\n\nPermission to use, copy, modify, and/or distribute this software for any\npurpose with or without fee is hereby granted, provided that the above\ncopyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\nWITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\nMERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\nANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\nWHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\nACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\nOR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.\n'
+LUCIDE_PATHS = {'Users': '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />', 'Folder': '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />', 'FileText': '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" />', 'CircleCheck': '<circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" />', 'ChartColumnIncreasing': '<path d="M13 17V9" /><path d="M18 17V5" /><path d="M3 3v16a2 2 0 0 0 2 2h16" /><path d="M8 17v-3" />', 'CalendarDays': '<path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" /><path d="M8 14h.01" /><path d="M12 14h.01" /><path d="M16 14h.01" /><path d="M8 18h.01" /><path d="M12 18h.01" /><path d="M16 18h.01" />', 'UserRound': '<circle cx="12" cy="8" r="5" /><path d="M20 21a8 8 0 0 0-16 0" />', 'Settings': '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" />', 'Bell': '<path d="M10.268 21a2 2 0 0 0 3.464 0" /><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />', 'LockKeyhole': '<circle cx="12" cy="16" r="1" /><rect x="3" y="10" width="18" height="12" rx="2" /><path d="M7 10V7a5 5 0 0 1 10 0v3" />', 'Search': '<circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />', 'Mail': '<rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />', 'Lock': '<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />', 'Pencil': '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" />', 'Trash2': '<path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" />'}
+
+
+def lucide_svg(name, classes):
+    """Self-contained React SVG: no runtime package/import in preview or export."""
+    if name not in LUCIDE_PATHS:
+        return ''
+    return ('<svg data-lucide={' + js(name) + '} aria-hidden="true" focusable="false" '
+            'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" '
+            'stroke="currentColor" strokeWidth={2} strokeLinecap="round" '
+            'strokeLinejoin="round" className="' + classes + '">'
+            '<metadata>{' + js(LUCIDE_LICENSE) + '}</metadata>' + LUCIDE_PATHS[name] + '</svg>')
+
+
+def semantic_icon(component):
+    """Closed vocabulary for short UI labels; unknown/ambiguous phrases abstain.
+
+    This is label-based semantic matching, not visual icon recognition. Callers
+    must independently establish a compact crop and its geometric association.
+    """
+    text = ' '.join(component.get('texts', [])).strip().casefold()
+    if not text or re.search(r'[^a-z\s-]', text):
+        return None
+    words = set(text.replace('-', ' ').split())
+    if len(text.split()) > 5:
+        return None
+    runs = component.get('ocr', [])
+    if not runs or any(float(r.get('confidence', 0)) < .6 for r in runs):
+        return None
+    groups = {
+        'Users': {'student', 'students', 'user', 'users', 'member', 'members', 'staff', 'people'},
+        'Folder': {'department', 'departments', 'folder', 'folders', 'directory', 'directories'},
+        'FileText': {'project', 'projects', 'document', 'documents', 'file', 'files', 'task', 'tasks'},
+        'ChartColumnIncreasing': {'report', 'reports', 'analytics', 'statistics'},
+        'CalendarDays': {'calendar', 'calendars', 'deadline', 'deadlines', 'appointment', 'appointments', 'event', 'events'},
+        'UserRound': {'profile'}, 'Settings': {'settings', 'preferences'},
+        'Bell': {'notification', 'notifications', 'alerts'},
+        'LockKeyhole': {'security'}, 'Search': {'search'}, 'Mail': {'email', 'mail'},
+        'Lock': {'password'}, 'Pencil': {'edit', 'rename'}, 'Trash2': {'delete', 'remove'},
+    }
+    modifiers = {'total', 'all', 'my', 'your', 'our', 'new', 'active', 'ongoing',
+                 'pending', 'completed', 'complete', 'upcoming', 'generated', 'recent', 'account'}
+    matches = [(name, terms) for name, terms in groups.items() if words & terms]
+    if len(matches) != 1:
+        return None
+    name, terms = matches[0]
+    if words - terms - modifiers:
+        return None
+    if name == 'FileText' and words & {'completed', 'complete'}:
+        return 'CircleCheck'
+    return name
+
+
+def inline_icon_match(c):
+    """Require an existing compact crop immediately left of its OCR label."""
+    if c.get('icon') or c.get('class') not in {'Paragraph', 'Button', 'Link', 'Textbox', 'Password box'}:
+        return None
+    box, runs = c.get('icon_box'), c.get('ocr', [])
+    if not isinstance(box, dict) or not runs:
+        return None
+    try:
+        x, y, r, b = (float(box[k]) for k in ('x1', 'y1', 'x2', 'y2'))
+        points = [p for run in runs for p in run['box']]
+        tx, ty = min(p[0] for p in points), min(p[1] for p in points)
+        tr, tb = max(p[0] for p in points), max(p[1] for p in points)
+        w, h, th = r-x, b-y, tb-ty
+        if (min(w,h,th) <= 0 or not .5 <= w/h <= 1.8
+                or h > 2*th or not -.15*th <= tx-r <= 2*th
+                or abs((y+b-ty-tb)/2) > .6*max(h,th)):
+            return None
+    except (KeyError, TypeError, ValueError):
+        return None
+    return semantic_icon(c)
+
+
+def stat_icon_match(picture, caption, parent):
+    """A small square-ish picture inside an already reconstructed number card."""
+    c = picture['component']
+    if (not image_source(c) or c.get('icon') or c.get('asset_source') != 'wireframe-crop'
+            or c.get('alt') not in {None, '', 'Cropped illustration from the uploaded wireframe'}):
+        return None
+    w, h = picture['x2']-picture['x1'], picture['y2']-picture['y1']
+    pw, ph = parent['x2']-parent['x1'], parent['y2']-parent['y1']
+    if (min(w,h,pw,ph) <= 0 or not .5 <= w/h <= 1.8
+            or w > .38*pw or h > .8*ph
+            or picture['x1'] < parent['x1'] or picture['y1'] < parent['y1']
+            or picture['x2'] > parent['x2'] or picture['y2'] > parent['y2']):
+        return None
+    return semantic_icon(caption['component'])
+
 def inline_artwork(c):
-    """Render an upstream crop without inferring a brand or icon from its label."""
+    """Replace only confidently associated UI icons; preserve every other crop."""
     src = image_source({'image_src': c.get('icon_image_src')})
     if not src:
         return ''
     size = 'h-6 w-6' if c.get('class') == 'Button' else 'h-8 w-8'
+    matched = inline_icon_match(c)
+    if matched:
+        return lucide_svg(matched, size + ' shrink-0')
     return ('<img src={' + js(src) + '} alt="" aria-hidden="true" '
             'className="' + size + ' shrink-0 object-contain" />')
 
@@ -514,8 +608,11 @@ def _render_stat_card(node, scale):
         if picture['x2'] > min(number['x1'], caption['x1'])+width*.08:
             return None
         size = max(48, min(96, round((picture['x2']-picture['x1'])*scale)))
+        matched = stat_icon_match(picture, caption, node)
+        rendered = (lucide_svg(matched, 'block w-full h-auto text-[var(--s2c-muted)]')
+                    if matched else generate_component(picture['component']))
         artwork = ('<div className="shrink-0" style={' + js({'width': size}) + '}>'
-                   + generate_component(picture['component']) + '</div>')
+                   + rendered + '</div>')
     return ('<section data-layout-kind="stat-card" className="flex min-w-0 min-h-36 '
             'items-center gap-4 rounded-xl border border-[var(--s2c-border)] '
             'bg-[var(--s2c-surface)] p-6 shadow-sm">' + artwork
