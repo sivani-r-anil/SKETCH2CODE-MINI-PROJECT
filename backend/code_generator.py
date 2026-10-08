@@ -336,6 +336,62 @@ def render_table(node):
     return '\n'.join(parts)
 
 
+def _render_icon_sidebar(node, scale):
+    """Center contents of a narrow sidebar containing repeated icon rows."""
+    if node['y2']-node['y1'] <= 1.3*max(1,node['x2']-node['x1']):
+        return None
+    def flatten(part):
+        if part.get('kind') == 'component':
+            return [part]
+        if part.get('kind') != 'stack':
+            return None
+        items=[]
+        for child in part.get('children', []):
+            group=flatten(child)
+            if group is None:
+                return None
+            items.extend(group)
+        return items
+    items=[]
+    for child in node.get('children', []):
+        group=flatten(child)
+        if group is None:
+            return None
+        items.extend(group)
+    if (sum(bool(p['component'].get('icon_image_src')) for p in items)<3
+            or any(p['component'].get('class') not in
+                   {'Paragraph','Heading','Subheading','Link','Image'} for p in items)):
+        return None
+    items.sort(key=lambda p:(p['y1'],p['x1']))
+    parts=['<aside data-layout-kind="icon-sidebar" className="min-w-0 rounded-xl border '
+           'border-[var(--s2c-border)] bg-[var(--s2c-surface)] p-4 sm:p-6 shadow-sm text-center">']
+    bottom=items[0]['y1']
+    for i,part in enumerate(items):
+        icon_row = bool(part['component'].get('icon_image_src'))
+        previous_icon = i > 0 and bool(items[i-1]['component'].get('icon_image_src'))
+        if icon_row and not previous_icon:
+            parts.append('<div className="mx-auto w-max max-w-full text-left">')
+        c={**part['component'],'align':'left' if icon_row else 'center'}
+        gap=min(40,max(0,round((part['y1']-bottom)*scale)))
+        if i:
+            gap=max(8,gap)
+        bottom=max(bottom,part['y2'])
+        style={'marginTop':gap}
+        if c['class']=='Image':
+            style['width']=max(48,min(112,round((part['x2']-part['x1'])*scale)))
+            classes='mx-auto max-w-full'
+        elif icon_row:
+            classes='w-full min-w-0 text-left'
+        else:
+            classes='flex w-full min-w-0 justify-center text-center'
+        parts.append('<div className="'+classes+'" style={'+js(style)+'}>'
+                     +generate_component(c)+'</div>')
+        next_icon = i+1 < len(items) and bool(items[i+1]['component'].get('icon_image_src'))
+        if icon_row and not next_icon:
+            parts.append('</div>')
+    return ''.join(parts)+'</aside>'
+
+
 def _render_text_card(node, scale):
     """Render a simple caption/description card without OCR ink-width columns.
 
@@ -362,6 +418,11 @@ def _render_text_card(node, scale):
         items.extend(group)
     if not items or any(p['component'].get('class') not in
                         {'Paragraph', 'Heading', 'Subheading', 'Image'} for p in items):
+        return None
+    # Inline artwork belongs to its own row, not a flattened description.
+    # Keep the spatial renderer for icon lists even when a title is present.
+    if any(p['component'].get('icon_image_src') or p['component'].get('icon')
+           for p in items):
         return None
     items.sort(key=lambda p: (p['y1'], p['x1']))
     headings = [i for i, p in enumerate(items)
@@ -479,8 +540,59 @@ def _centered_title_group(child, parent):
             and parts[1]['y1'] >= parts[0]['y1'])
 
 
+def _align_form_stack(node):
+    """Regularize small sketch offsets within an established horizontal form.
+
+    Work on a rendering copy: detections and the reconstructed tree stay intact.
+    Repeated label/control pairs provide the shared columns, never OCR words.
+    """
+    from copy import deepcopy
+    from statistics import median
+    if node.get('kind') != 'stack':
+        return node
+    rows = [c for c in node.get('children', [])
+            if c.get('kind') == 'row' and c.get('role') == 'form-row'
+            and len(c.get('children', [])) == 2]
+    if len(rows) < 2:
+        return node
+    controls = [r['children'][1] for r in rows]
+    unit = median(max(1, c['y2']-c['y1']) for c in controls)
+    tolerance = .6*unit
+    left = node['x1']
+    label_right = median(r['children'][0]['x2'] for r in rows)
+    control_left = median(c['x1'] for c in controls)
+    right = median(c['x2'] for c in controls)
+    if (not left < label_right < control_left < right
+            or any(abs(r['x1']-left) > tolerance for r in rows)
+            or any(abs(c['x1']-control_left) > tolerance
+                   or abs(c['x2']-right) > tolerance for c in controls)):
+        return node
+    aligned = deepcopy(node)
+    def align_intro(part):
+        children = part.get('children', [])
+        if (part.get('kind') == 'stack' and children
+                and all(c.get('kind') == 'component'
+                        and c.get('component', {}).get('class') in {'Heading', 'Subheading', 'Paragraph'}
+                        and abs(c['x1']-left) <= tolerance for c in children)):
+            part['x1'] = left
+            for c in children:
+                c['x1'] = left
+    for child in aligned.get('children', []):
+        if child.get('kind') == 'row' and child.get('role') == 'form-row':
+            child['x1'], child['x2'] = left, right
+            label, control = child['children']
+            label['x1'], label['x2'] = left, label_right
+            control['x1'], control['x2'] = control_left, right
+        elif abs(child['x1']-left) <= tolerance:
+            align_intro(child)
+            if child.get('kind') == 'component':
+                child['x1'] = left
+    return aligned
+
+
 def render_layout_tree(node, scale):
     """Render geometric groups in normal flow; never position controls absolutely."""
+    node = _align_form_stack(node)
     kind = node.get('kind', 'stack')
     children = node.get('children', [])
     if kind == 'component':
@@ -491,6 +603,9 @@ def render_layout_tree(node, scale):
     if node.get('role') == 'table':
         return render_table(node)
     if kind == 'container':
+        sidebar = _render_icon_sidebar(node, scale)
+        if sidebar is not None:
+            return sidebar
         if node.get('container_class') == 'Card':
             card = _render_stat_card(node, scale)
             if card is not None:

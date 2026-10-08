@@ -100,7 +100,157 @@ def extract_text_with_links(image_path):
                 item['coloured_text'] = True
     refined.extend(recover_grid_numbers(image, refined))
     refined.extend(recover_aligned_numbers(image, refined))
+    refined = retry_email_lines(image, refined)
     return raw, refined
+
+
+def _recover_email_at(original, views):
+    """Recover only @ when two crop readings agree on its location.
+
+    Confidence belongs to the run containing @, not unrelated domain runs.
+    All other original characters are retained; this is not address validation.
+    """
+    import re
+    from difflib import SequenceMatcher
+    compact = re.sub(r'\s+', '', original)
+    if '@' in compact or len(views) != 2:
+        return None
+    evidence = []
+    letters = lambda value: ''.join(c for c in value.casefold() if c.isalnum())
+    for view in views:
+        candidate = view['candidate']
+        if candidate.count('@') != 1:
+            return None
+        prefix, suffix = candidate.split('@')
+        at_runs = [run for run in view['runs'] if '@' in run['text']]
+        if (len(at_runs) != 1 or not prefix or not suffix
+                or float(at_runs[0]['confidence']) < .6
+                or SequenceMatcher(None, letters(compact), letters(candidate)).ratio() < .85):
+            return None
+        evidence.append((prefix, suffix, float(at_runs[0]['confidence'])))
+    first, second = evidence
+    if (first[0].casefold() != second[0].casefold()
+            or letters(first[1]) != letters(second[1])
+            or max(first[2], second[2]) < .7):
+        return None
+    boundary = len(first[0])
+    if compact[:boundary].casefold() != first[0].casefold():
+        return None
+    remainder = compact[boundary:]
+    # A stray apostrophe at exactly the reread @ position may be replaced.
+    # Do not remove punctuation elsewhere or infer a missing domain dot.
+    if remainder.startswith(("'", "’")):
+        remainder = remainder[1:]
+    if not re.fullmatch(r'[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+', remainder):
+        return None
+    return compact[:boundary] + '@' + remainder
+
+
+def retry_email_lines(image, existing):
+    """Retry fragmented email-like lines without inventing a missing @ symbol.
+
+    Two unconstrained OCR views must agree on a complete address, or support
+    only the missing @ at the same position. Keep raw OCR and replaced runs.
+    """
+    import cv2
+    import re
+    from difflib import SequenceMatcher
+    if image is None:
+        return list(existing)
+    email = re.compile(r"[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)+")
+    def bounds(item):
+        xs,ys=zip(*item['box'])
+        return min(xs),min(ys),max(xs),max(ys)
+    groups=[]
+    for index,item in sorted(enumerate(existing),key=lambda pair:(bounds(pair[1])[0],bounds(pair[1])[1])):
+        x,y,r,b=bounds(item);h=max(1,b-y)
+        target=None
+        for group in groups:
+            previous=existing[group[-1]];px,py,pr,pb=bounds(previous)
+            unit=min(h,pb-py)
+            if (unit>0 and -.4*unit <= x-pr <= 1.2*unit
+                    and min(b,pb)-max(y,py)>=.5*unit
+                    and abs(y+b-py-pb)/2<=.5*unit):
+                target=group
+                break
+        if target is None:
+            groups.append([index])
+        else:
+            target.append(index)
+    replacements={};consumed=set();attempts=0
+    for group in groups:
+        items=[existing[i] for i in group]
+        text=''.join(str(o['text']) for o in items)
+        compact=re.sub(r'\s+','',text)
+        if (email.fullmatch(compact) or not re.search(r'[A-Za-z0-9-]+\.[A-Za-z]{2,}',compact)
+                or len(compact)>254 or any(o.get('separate_run') for o in items)):
+            continue
+        if attempts>=12:
+            break
+        attempts+=1
+        boxes=[bounds(o) for o in items]
+        x,y,r,b=min(q[0] for q in boxes),min(q[1] for q in boxes),max(q[2] for q in boxes),max(q[3] for q in boxes)
+        pad=max(2,round((b-y)*.12))
+        crop=image[max(0,y-pad):min(image.shape[0],b+pad),max(0,x-pad):min(image.shape[1],r+pad)]
+        if not crop.size:
+            continue
+        gray=cv2.cvtColor(crop,cv2.COLOR_BGR2GRAY)
+        enhanced=cv2.createCLAHE(clipLimit=2.0,tileGridSize=(8,8)).apply(gray)
+        views=[cv2.resize(crop,None,fx=2,fy=2,interpolation=cv2.INTER_CUBIC),
+               cv2.resize(enhanced,None,fx=3,fy=3,interpolation=cv2.INTER_CUBIC)]
+        candidates=[]
+        diagnostic={'original_text':text, 'views':[], 'status':'rejected'}
+        for view_name,view in zip(('colour_2x','contrast_3x'),views):
+            results=get_reader().readtext(view,detail=1,paragraph=False)
+            ordered=sorted(results,key=lambda v:min(p[0] for p in v[0]))
+            candidate=re.sub(r'\s+','',''.join(v[1] for v in ordered))
+            confidence=min((float(v[2]) for v in results),default=0.0)
+            old_letters=re.sub(r'[^a-z0-9]','',compact.lower())
+            new_letters=re.sub(r'[^a-z0-9]','',candidate.lower())
+            similarity=SequenceMatcher(None,old_letters,new_letters).ratio()
+            if not results:
+                reason='no_text'
+            elif confidence<.7:
+                reason='low_confidence'
+            elif not email.fullmatch(candidate):
+                reason='not_complete_email'
+            elif similarity<.85:
+                reason='text_changed_too_much'
+            else:
+                reason='eligible'
+                candidates.append((candidate,confidence))
+            diagnostic['views'].append({
+                'view':view_name, 'candidate':candidate,
+                'confidence':round(confidence,4), 'similarity':round(similarity,4),
+                'reason':reason,
+                'runs':[{'text':str(v[1]),'confidence':round(float(v[2]),4)} for v in ordered]})
+        if len(candidates)==2 and candidates[0][0]==candidates[1][0]:
+            accepted_text=candidates[0][0]
+            accepted_confidence=min(c[1] for c in candidates)
+            diagnostic.update(status='accepted',reason='two_views_agree')
+            source='ocr-email-line-retry'
+        else:
+            accepted_text=_recover_email_at(text,diagnostic['views'])
+            if accepted_text is None:
+                diagnostic['reason']='views_disagree' if len(candidates)==2 else 'ineligible_reading'
+                replacements[group[0]]={**existing[group[0]],'email_retry':diagnostic}
+                continue
+            # Retain the original confidence: recovering punctuation does not
+            # make the uncorrected letters more certain.
+            accepted_confidence=min(float(o.get('confidence',0)) for o in items)
+            diagnostic.update(status='partial',reason='two_views_agree_on_at',
+                              recovered_text=accepted_text)
+            source='ocr-email-at-retry'
+        replacements[group[0]]={
+            'text':accepted_text, 'confidence':round(accepted_confidence,3),
+            'box':[[int(x),int(y)],[int(r),int(y)],[int(r),int(b)],[int(x),int(b)]],
+            'source':source, 'original_runs':[dict(o) for o in items],
+            'email_retry':diagnostic}
+        for flag in ('underlined', 'link_hint', 'coloured_text'):
+            if all(o.get(flag) for o in items):
+                replacements[group[0]][flag] = True
+        consumed.update(group[1:])
+    return [replacements.get(i,o) for i,o in enumerate(existing) if i not in consumed]
 
 
 def recover_grid_numbers(image, existing):

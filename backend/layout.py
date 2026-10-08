@@ -252,7 +252,7 @@ def _column_groups(nodes):
     return merged
 
 
-def _join_text_runs(nodes):
+def _join_text_runs(nodes, overlap_tolerance=.15):
     """Join adjacent OCR fragments on one baseline, tolerating tilted boxes.
 
     Keep links, labels and controls separate. No text is inferred or rewritten.
@@ -273,7 +273,7 @@ def _join_text_runs(nodes):
                 h = min(node['y2']-node['y1'], p['y2']-p['y1'])
                 overlap = min(node['y2'], p['y2'])-max(node['y1'], p['y1'])
                 gap = max(node['x1'], p['x1'])-min(node['x2'], p['x2'])
-                return (h > 0 and overlap >= h*.5 and gap >= -h*.15
+                return (h > 0 and overlap >= h*.5 and gap >= -h*overlap_tolerance
                         and abs(node['y1']+node['y2']-p['y1']-p['y2'])/2 < h*.6)
             if all(same_line(p) for p in group) and any(
                     max(node['x1'], p['x1'])-min(node['x2'], p['x2'])
@@ -776,6 +776,62 @@ def _table_groups(leaves):
     return tables, consumed
 
 
+def _sidebar_alignment(children, container):
+    """Align repeated cropped-icon rows inside a narrow, tall container.
+
+    Only layout boxes change; component and OCR evidence retain their bounds.
+    """
+    width = container['x2']-container['x1']
+    height = container['y2']-container['y1']
+    icons = [n for n in children if n.get('kind') == 'component'
+             and n.get('component', {}).get('class') == 'Paragraph'
+             and n['component'].get('icon_box') and n['component'].get('icon_image_src')]
+    if height <= width*1.3 or len(icons) < 3:
+        return children
+    boxes = [n['component']['icon_box'] for n in icons]
+    typical = median(b['x2']-b['x1'] for b in boxes)
+    if (max(b['x1'] for b in boxes)-min(b['x1'] for b in boxes) > typical*.6
+            or max(b['y1'] for b in boxes)-min(b['y1'] for b in boxes) < typical*2):
+        return children
+    left = median(b['x1'] for b in boxes)
+    result = []
+    for node in children:
+        if node not in icons:
+            result.append(node)
+            continue
+        c = node['component']
+        evidence = [c['icon_box']]+c.get('ocr', [])
+        bounds = _bounds(evidence)
+        result.append({**node, **bounds, 'x1': left})
+    # OCR fragments above the icon list can overlap slightly due to handwriting.
+    # Keep their literal text, and merge only matching text classes/baselines.
+    first = min(b['y1'] for b in boxes)
+    captions = [n for n in result if n['y2'] < first
+                and n.get('component', {}).get('class') == 'Paragraph'
+                and not n['component'].get('icon_image_src')]
+    rest = [n for n in result if n not in captions]
+    captions = sorted(_join_text_runs(captions, overlap_tolerance=.35),
+                      key=lambda n: (n['y1'], n['x1']))
+    # A short caption directly below a compact portrait/artwork, followed by
+    # secondary text, is the sidebar's local title. No name or email is guessed.
+    if len(captions) >= 2:
+        title, detail = captions[:2]
+        h = max(1, title['y2']-title['y1'])
+        artwork = [n for n in rest if n.get('component', {}).get('class') == 'Image'
+                   and .7 <= (n['x2']-n['x1'])/max(1,n['y2']-n['y1']) <= 1.4
+                   and 0 <= title['y1']-n['y2'] <= h
+                   and abs((n['x1']+n['x2']-title['x1']-title['x2'])/2) <= h]
+        if (len(artwork) == 1 and len(' '.join(title['component'].get('texts', [])).split()) <= 5
+                and -.2*h <= detail['y1']-title['y2'] <= h
+                and abs((detail['x1']+detail['x2']-title['x1']-title['x2'])/2) <= h):
+            component = title['component']
+            captions[0] = {**title, 'component': {
+                **component, 'class': 'Subheading',
+                'corrections': component.get('corrections', [])+[
+                    'Leading caption below sidebar artwork given local title emphasis.']}}
+    return rest+captions
+
+
 def _hierarchy(components):
     leaves = []
     for index, component in enumerate(components):
@@ -816,6 +872,7 @@ def _hierarchy(components):
             return node
         children = [expand(child, depth+1) for i, child in enumerate(grouped)
                     if parents.get(i) == node['index']]
+        children = _sidebar_alignment(children, node)
         if node['component']['class'] == 'Card':
             children = _content_titles(children, card=True)
         return {**node, 'kind': 'container',
