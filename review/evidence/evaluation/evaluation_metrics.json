@@ -1,0 +1,11 @@
+{
+    "model": "YOLOv8n",
+    "dataset": "Sketch2Code Roboflow Version 7",
+    "evaluation_split": "validation",
+    "validation_images": 179,
+    "annotated_objects": 3750,
+    "precision": 0.9369832286088134,
+    "recall": 0.9771465899976416,
+    "mAP50": 0.9676961104843028,
+    "mAP50_95": 0.8465438918146649
+}
