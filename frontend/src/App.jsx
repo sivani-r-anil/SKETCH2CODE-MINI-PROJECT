@@ -3,6 +3,7 @@ import Editor from "@monaco-editor/react"
 import * as Babel from "@babel/standalone"
 import JSZip from "jszip"
 import "./App.css"
+import FeatureSpotlight from "./components/FeatureSpotlight.jsx"
 
 const THEMES = [
   ["light", "Light"], ["dark", "Dark"], ["blue", "Blue"],
@@ -323,6 +324,7 @@ function App() {
 
   return (
     <div className="sc-app" id="top">
+      <style>{NAVIGATION_STYLES}</style>
       <a href="#main-content" className="sc-button sc-skip-link" onClick={event => { event.preventDefault(); mainRef.current?.focus() }}>Skip to main content</a>
       <header className="sc-header">
         <div className="sc-shell sc-header-inner">
@@ -330,47 +332,18 @@ function App() {
             <span className="sc-brand-mark" aria-hidden="true">&lt;/&gt;</span>
             <span>Sketch<em>2</em>Code</span>
           </a>
-          <span className="sc-header-note">From an idea on paper to an interface.</span>
-          <div className="sc-toolbar">
-            {appStage === "workspace" ? <button className="sc-button sc-button-small" onClick={() => navigate("upload")}>← New Wireframe</button> : <>
-              {appStage === "upload" && <button className="sc-button sc-button-quiet sc-button-small" disabled={isProcessing} onClick={() => navigate("landing")}>← Back to Home</button>}
-              {(appStage === "landing" || hasResults) && <button className="sc-button sc-button-small" disabled={isProcessing} onClick={() => navigate(hasResults ? "workspace" : "upload")}>Open Workspace <Icon name="arrow" /></button>}
-            </>}
-          </div>
+          <nav className="sc-toolbar sc-primary-nav" aria-label="Main navigation">
+            <button type="button" className="sc-button sc-button-quiet sc-button-small" disabled={isProcessing} aria-current={appStage === "landing" ? "page" : undefined} onClick={() => navigate("landing")}>Home</button>
+            <button type="button" className="sc-button sc-button-quiet sc-button-small" disabled={isProcessing} aria-current={appStage === "features" ? "page" : undefined} onClick={() => navigate("features")}>Features</button>
+            <button type="button" className="sc-button sc-button-small" disabled={isProcessing} aria-current={appStage === "workspace" ? "page" : undefined} onClick={() => navigate(hasResults ? "workspace" : "upload")}>Open Workspace <Icon name="arrow" /></button>
+          </nav>
         </div>
       </header>
 
-      <main className="sc-shell sc-stage" id="main-content" ref={mainRef} tabIndex={-1} key={appStage}>
-        {appStage === "landing" && <>
-        <section className="sc-hero" aria-labelledby="hero-title">
-          <div className="sc-hero-grid">
-            <div className="sc-hero-copy">
-              <p className="sc-eyebrow"><span className="sc-dot" />Sketch. Analyze. Create.</p>
-              <h1 id="hero-title">Turn Wireframes Into <span>React Interfaces.</span></h1>
-              <p className="sc-hero-description">Bring hand-drawn and digital wireframes into the browser. Computer vision and AI turn your sketch into editable React + Tailwind code, with a live preview.</p>
-              <div className="sc-hero-actions">
-                <button onClick={() => navigate("upload")} className="sc-button sc-button-primary">Get Started <Icon name="arrow" /></button>
-                <span className="sc-muted">Your sketch. Your code.</span>
-              </div>
-              <p className="sc-hero-footnote">Built with YOLO, EasyOCR & spatial layout reconstruction.</p>
-            </div>
-            <HeroVisual />
-          </div>
-        </section>
+      <main className={`sc-shell sc-stage${appStage === "landing" || appStage === "features" ? " sc-showcase-stage" : ""}`} id="main-content" ref={mainRef} tabIndex={-1} key={appStage}>
+        {appStage === "landing" && <LandingHome onStart={() => navigate("upload")} onFeatures={() => navigate("features")} />}
 
-        <div className="sc-steps" aria-label="How Sketch2Code works">
-          {[
-            ["Upload a wireframe", "Start with a hand-drawn or digital sketch."],
-            ["Analyze with AI", "Detect components, text and spatial relationships."],
-            ["Generate React UI", "Translate the structure into React + Tailwind."],
-            ["Edit & export", "Refine the code, preview and download."],
-          ].map(([title, description], index) => <div className="sc-step" key={title}>
-            <span className="sc-step-number">0{index + 1}</span>
-            <div><h3>{title}</h3><p>{description}</p></div>
-          </div>)}
-        </div>
-
-        </>}
+        {appStage === "features" && <FeatureSpotlight onStart={() => navigate("upload")} isProcessing={isProcessing} />}
 
         {appStage === "upload" && <div className="sc-workspace sc-upload-screen" style={{ maxWidth: 900, marginInline: "auto" }}>
           <section className="sc-section" aria-labelledby="upload-title">
@@ -420,6 +393,7 @@ function App() {
             <div className="sc-panel-header">
               <div><h3>Input Wireframe</h3><p className="sc-file-name">{image?.name}</p></div>
               <div className="sc-toolbar">
+                <button type="button" className="sc-button sc-button-small" disabled={isProcessing} onClick={() => navigate("upload")}>← New Wireframe</button>
                 <button className="sc-button sc-button-small" disabled={!originalUrl} onClick={() => openImage("original")}><Icon name="image" />View Original</button>
                 <button className="sc-button sc-button-small" disabled={!processedImage} onClick={() => openImage("processed")}><Icon name="image" />View Processed Image</button>
               </div>
@@ -505,10 +479,7 @@ function App() {
         </div>}
       </main>
 
-      <footer className="sc-footer"><div className="sc-shell sc-footer-inner">
-        <span className="sc-brand">Sketch<em>2</em>Code</span>
-        <p>AI-Driven Wireframe-to-React Code Synthesizer · MCA Mini Project</p>
-      </div></footer>
+
 
       <dialog ref={imageDialog} className="sc-modal" aria-labelledby="image-dialog-title" onClick={event => {
         if (event.target !== event.currentTarget) return
@@ -534,6 +505,146 @@ function Icon({ name }) {
     close: "m6 6 12 12M6 18 18 6",
   }
   return <svg className="sc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name] || paths.code} /></svg>
+}
+
+// Scoped presentation styles; generated previews retain their own theme CSS.
+const NAVIGATION_STYLES = `
+.sc-primary-nav { margin-left:auto; flex-wrap:wrap; justify-content:flex-end; gap:8px; }
+.sc-primary-nav [aria-current="page"] { color:var(--sc-coral); background:#ff8a7e0c; border-color:#ff8a7e30; }
+.sc-showcase-stage { animation:none; }
+@media(max-width:600px) {
+ .sc-header-inner { flex-wrap:wrap; }
+ .sc-primary-nav { width:100%; justify-content:flex-start; margin:0; gap:6px; }
+ .sc-primary-nav .sc-button { padding:9px 11px; font-size:11px; }
+}
+`;
+
+const LANDING_STYLES = `
+.sc-landing .sc-hero { padding:80px 0 48px; }
+.sc-landing .sc-hero::before { inset:0 -5%; background:radial-gradient(ellipse at 76% 45%,#b4443320,transparent 65%); }
+.sc-landing .sc-hero-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.12fr); align-items:center; gap:42px; }
+.sc-landing .sc-hero-copy { max-width:570px; margin:0; text-align:left; transform:translate(var(--sc-copy-x,0px),var(--sc-copy-y,0px)); }
+.sc-landing .sc-hero h1 { margin:0; font-size:clamp(38px,4.8vw,62px); line-height:1.09; letter-spacing:-.055em; font-weight:650; }
+.sc-landing .sc-hero h1 span { display:block; }
+.sc-landing .sc-hero-description { max-width:470px; margin:25px 0 0; font-size:15px; line-height:1.9; }
+.sc-landing .sc-hero-actions { display:flex; flex-direction:column; align-items:flex-start; gap:14px; margin-top:30px; }
+.sc-landing .sc-hero-button-row { display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
+.sc-landing .sc-hero-actions .sc-button { padding:14px 22px; }
+.sc-landing .sc-hero-footnote { margin:0; font-size:11px; }
+.sc-landing .sc-copy-entrance { animation:sc-copy-arrive .7s cubic-bezier(.22,1,.36,1) both; }
+.sc-landing .sc-stack-showcase { width:100%; max-width:620px; min-width:0; margin:0; transform:translateY(var(--sc-art-y,0px)) rotateY(var(--sc-art-turn,0deg)); }
+.sc-landing .sc-visual { width:100%; margin:0; aspect-ratio:1.12; perspective:1200px; }
+.sc-landing .sc-window { box-shadow:-12px 28px 55px #0007,0 1px 0 #ffffff15 inset; animation:sc-panel-rock 9s ease-in-out infinite; }
+.sc-landing .sc-window-wire { width:46%; left:1%; top:9%; }
+.sc-landing .sc-window-code { width:60%; left:12%; top:44%; animation-duration:11s; animation-delay:-3s; }
+.sc-landing .sc-window-result { width:48%; right:0; top:15%; animation-duration:10s; animation-delay:-6s; animation-direction:reverse; }
+.sc-landing .sc-analysis-chip { left:32%; top:28%; }
+.sc-landing .sc-code-line { font-size:clamp(8px,.85vw,11px); }
+.sc-landing .sc-connectors { opacity:.5; }
+.sc-landing .sc-visual-caption { left:0; right:0; bottom:0; text-align:center; }
+.sc-landing .sc-art-entrance { animation:sc-art-arrive .85s cubic-bezier(.22,1,.36,1) both; }
+.sc-landing .sc-motion-controls { display:flex; justify-content:center; margin-top:14px; }
+.sc-landing .sc-motion-toggle { min-height:32px; padding:5px 11px; font-size:11px; }
+.sc-landing[data-motion-paused="true"] .sc-scene,.sc-landing[data-motion-paused="true"] .sc-window { animation-play-state:paused !important; }
+@keyframes sc-copy-arrive { from { opacity:0; transform:translateX(-14px); } to { opacity:1; transform:translateX(0); } }
+@keyframes sc-art-arrive { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+@keyframes sc-panel-rock { 0%,100% { rotate:-1.3deg; } 50% { rotate:1.3deg; } }
+@media(hover:hover) and (prefers-reduced-motion:no-preference) {
+ .sc-landing .sc-window { transition:filter .25s; }
+ .sc-landing .sc-visual:hover .sc-window { filter:brightness(1.04); }
+}
+@media(max-width:900px) {
+ .sc-landing .sc-hero { padding-top:48px; }
+ .sc-landing .sc-hero-grid { grid-template-columns:1fr; gap:36px; }
+ .sc-landing .sc-hero-copy { max-width:650px; margin:auto; text-align:center; }
+ .sc-landing .sc-hero h1 { font-size:clamp(38px,7vw,58px); }
+ .sc-landing .sc-hero-description { margin-inline:auto; }
+ .sc-landing .sc-hero-actions { align-items:center; }
+ .sc-landing .sc-hero-button-row { justify-content:center; }
+ .sc-landing .sc-stack-showcase { max-width:520px; margin:auto; }
+ .sc-landing .sc-code-line { font-size:clamp(7px,1.9vw,10px); }
+}
+@media(max-width:600px) {
+ .sc-landing .sc-hero { padding:38px 0 24px; }
+ .sc-landing .sc-hero-description { font-size:14px; }
+ .sc-landing .sc-window-bar { font-size:8px; }
+ .sc-landing .sc-window-body,.sc-landing .sc-window-code .sc-window-body { padding:12px; }
+ .sc-landing .sc-mini-heading { font-size:16px; }
+}
+@media(max-width:400px) {
+ .sc-landing .sc-visual { aspect-ratio:1; }
+ .sc-landing .sc-mini-heading { font-size:13px; margin-top:12px; }
+ .sc-landing .sc-mini-card { height:42px; padding:6px; }
+ .sc-landing .sc-wire-box { height:45px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .sc-landing .sc-hero-copy,.sc-landing .sc-stack-showcase { transform:none !important; }
+ .sc-landing .sc-window,.sc-landing .sc-scene,.sc-landing .sc-copy-entrance,.sc-landing .sc-art-entrance { animation:none !important; rotate:none; }
+ .sc-landing .sc-motion-toggle { display:none; }
+}
+`;
+
+function LandingHome({ onStart, onFeatures }) {
+  const sectionRef = useRef(null)
+  const [paused, setPaused] = useState(false)
+
+  useEffect(() => {
+    const section = sectionRef.current
+    if (!section) return
+    const hero = section.querySelector(".sc-hero")
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)")
+    const properties = ["--sc-copy-x", "--sc-copy-y", "--sc-art-y", "--sc-art-turn"]
+    let frame = 0
+    const reset = () => properties.forEach(name => section.style.removeProperty(name))
+    const update = () => {
+      frame = 0
+      if (paused || motion.matches || !hero) { reset(); return }
+      const bounds = hero.getBoundingClientRect()
+      const progress = Math.max(0, Math.min(1, -bounds.top / Math.max(bounds.height * 0.85, 1)))
+      const mobile = window.innerWidth <= 900
+      section.style.setProperty("--sc-copy-x", `${mobile ? 0 : -10 * progress}px`)
+      section.style.setProperty("--sc-copy-y", `${mobile ? 0 : -8 * progress}px`)
+      section.style.setProperty("--sc-art-y", `${mobile ? -10 * progress : -24 * progress}px`)
+      section.style.setProperty("--sc-art-turn", `${mobile ? 0 : 2 * progress}deg`)
+    }
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(update) }
+    window.addEventListener("scroll", schedule, { passive:true })
+    window.addEventListener("resize", schedule)
+    motion.addEventListener("change", schedule)
+    schedule()
+    return () => {
+      window.removeEventListener("scroll", schedule)
+      window.removeEventListener("resize", schedule)
+      motion.removeEventListener("change", schedule)
+      cancelAnimationFrame(frame)
+      reset()
+    }
+  }, [paused])
+
+  return <div className="sc-landing" ref={sectionRef} data-motion-paused={paused ? "true" : "false"}>
+    <style>{LANDING_STYLES}</style>
+    <section className="sc-hero" aria-labelledby="hero-title">
+      <div className="sc-hero-grid">
+        <div className="sc-hero-copy">
+          <div className="sc-copy-entrance">
+            <h1 id="hero-title">Turn Wireframes Into <span>React Interfaces.</span></h1>
+            <p className="sc-hero-description">From an idea on paper to editable React and Tailwind code. Upload your wireframe, explore the live preview, and make it yours.</p>
+            <div className="sc-hero-actions">
+              <div className="sc-hero-button-row">
+                <button type="button" onClick={onStart} className="sc-button sc-button-primary">Get Started <Icon name="arrow" /></button>
+                <button type="button" onClick={onFeatures} className="sc-button sc-button-quiet">Explore Features <Icon name="arrow" /></button>
+              </div>
+              <p className="sc-hero-footnote">Your sketch. Your code.</p>
+            </div>
+          </div>
+        </div>
+        <div className="sc-stack-showcase">
+          <div className="sc-art-entrance"><HeroVisual /></div>
+          <div className="sc-motion-controls"><button type="button" className="sc-button sc-button-quiet sc-motion-toggle" aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? "Resume motion" : "Pause motion"}</button></div>
+        </div>
+      </div>
+    </section>
+  </div>
 }
 
 function HeroVisual() {

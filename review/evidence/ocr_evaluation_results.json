@@ -1,0 +1,74 @@
+[
+    {
+        "wireframe": "Signup",
+        "trace": 14,
+        "raw_word_recall": 100.0,
+        "processed_word_recall": 100.0,
+        "raw_word_precision": 100.0,
+        "processed_word_precision": 100.0,
+        "raw_cer": 9.26,
+        "processed_cer": 9.26,
+        "raw_wer": 11.11,
+        "processed_wer": 11.11
+    },
+    {
+        "wireframe": "Login",
+        "trace": 15,
+        "raw_word_recall": 95.24,
+        "processed_word_recall": 95.24,
+        "raw_word_precision": 95.24,
+        "processed_word_precision": 95.24,
+        "raw_cer": 0.77,
+        "processed_cer": 0.77,
+        "raw_wer": 4.76,
+        "processed_wer": 4.76
+    },
+    {
+        "wireframe": "Homepage",
+        "trace": 16,
+        "raw_word_recall": 100.0,
+        "processed_word_recall": 100.0,
+        "raw_word_precision": 98.73,
+        "processed_word_precision": 98.73,
+        "raw_cer": 24.27,
+        "processed_cer": 24.27,
+        "raw_wer": 30.26,
+        "processed_wer": 30.26
+    },
+    {
+        "wireframe": "Student Table",
+        "trace": 17,
+        "raw_word_recall": 91.8,
+        "processed_word_recall": 95.08,
+        "raw_word_precision": 90.32,
+        "processed_word_precision": 90.62,
+        "raw_cer": 12.15,
+        "processed_cer": 13.01,
+        "raw_wer": 24.59,
+        "processed_wer": 27.87
+    },
+    {
+        "wireframe": "Dashboard",
+        "trace": 18,
+        "raw_word_recall": 96.43,
+        "processed_word_recall": 100.0,
+        "raw_word_precision": 96.43,
+        "processed_word_precision": 96.55,
+        "raw_cer": 8.65,
+        "processed_cer": 9.62,
+        "raw_wer": 28.57,
+        "processed_wer": 32.14
+    },
+    {
+        "wireframe": "Settings",
+        "trace": 19,
+        "raw_word_recall": 90.62,
+        "processed_word_recall": 93.75,
+        "raw_word_precision": 76.32,
+        "processed_word_precision": 90.91,
+        "raw_cer": 53.12,
+        "processed_cer": 51.17,
+        "raw_wer": 71.88,
+        "processed_wer": 50.0
+    }
+]

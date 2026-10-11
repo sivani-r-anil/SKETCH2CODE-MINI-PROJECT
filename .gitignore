@@ -9,3 +9,6 @@ backend/uploads/
 .env.*
 !.env.example
 *.log
+
+# EasyOCR Windows compatibility dependency
+backend/compat_deps/

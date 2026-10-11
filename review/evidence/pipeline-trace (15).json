@@ -1,0 +1,4306 @@
+{
+  "message": "Conversion complete. Review detected and inferred components.",
+  "filename": "00a5a9c2b77248279d5043a21be182d7.png",
+  "processed_filename": "processed_00a5a9c2b77248279d5043a21be182d7.png",
+  "detections": [
+    {
+      "class": "Paragraph",
+      "confidence": 0.299,
+      "x1": 1165.7,
+      "y1": 117.9,
+      "x2": 1401.9,
+      "y2": 203,
+      "source": "yolo",
+      "evidence": [
+        {
+          "class": "Paragraph",
+          "confidence": 0.299,
+          "x1": 1165.7,
+          "y1": 117.9,
+          "x2": 1401.9,
+          "y2": 203,
+          "image": "original"
+        }
+      ]
+    },
+    {
+      "class": "Radio Button",
+      "confidence": 0.205,
+      "x1": 584.6,
+      "y1": 210.3,
+      "x2": 809.6,
+      "y2": 326,
+      "source": "yolo",
+      "evidence": [
+        {
+          "class": "Radio Button",
+          "confidence": 0.205,
+          "x1": 584.6,
+          "y1": 210.3,
+          "x2": 809.6,
+          "y2": 326,
+          "image": "processed"
+        },
+        {
+          "class": "Check Box",
+          "confidence": 0.171,
+          "x1": 587.5,
+          "y1": 216.6,
+          "x2": 810.6,
+          "y2": 323.6,
+          "image": "original"
+        }
+      ]
+    },
+    {
+      "class": "Label",
+      "confidence": 0.331,
+      "x1": 580.9,
+      "y1": 391.3,
+      "x2": 658.6,
+      "y2": 433.4,
+      "source": "yolo",
+      "evidence": [
+        {
+          "class": "Label",
+          "confidence": 0.331,
+          "x1": 580.9,
+          "y1": 391.3,
+          "x2": 658.6,
+          "y2": 433.4,
+          "image": "original"
+        },
+        {
+          "class": "Label",
+          "confidence": 0.266,
+          "x1": 580.3,
+          "y1": 391.5,
+          "x2": 657.8,
+          "y2": 433.8,
+          "image": "processed"
+        }
+      ]
+    },
+    {
+      "class": "Button",
+      "confidence": 0.743,
+      "x1": 342,
+      "y1": 470,
+      "x2": 1060,
+      "y2": 553,
+      "source": "yolo",
+      "evidence": [
+        {
+          "class": "Button",
+          "confidence": 0.743,
+          "x1": 335.2,
+          "y1": 458.6,
+          "x2": 1041.4,
+          "y2": 558.8,
+          "image": "original"
+        },
+        {
+          "class": "Button",
+          "confidence": 0.381,
+          "x1": 334.5,
+          "y1": 459.6,
+          "x2": 1033.6,
+          "y2": 561.1,
+          "image": "processed"
+        },
+        {
+          "class": "Textarea",
+          "confidence": 0.29,
+          "x1": 349.2,
+          "y1": 461.8,
+          "x2": 1064.9,
+          "y2": 558.1,
+          "image": "original"
+        },
+        {
+          "class": "Button",
+          "confidence": 0.167,
+          "x1": 359.6,
+          "y1": 469.9,
+          "x2": 697.6,
+          "y2": 552.4,
+          "image": "original"
+        }
+      ],
+      "filled": false,
+      "fill_fraction": 0,
+      "fill_color": "#c4c0bd",
+      "outline": true
+    },
+    {
+      "class": "Table data",
+      "confidence": 0.193,
+      "x1": 261,
+      "y1": 531.4,
+      "x2": 907.7,
+      "y2": 1035.7,
+      "source": "yolo",
+      "evidence": [
+        {
+          "class": "Table data",
+          "confidence": 0.193,
+          "x1": 261,
+          "y1": 531.4,
+          "x2": 907.7,
+          "y2": 1035.7,
+          "image": "processed"
+        }
+      ]
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.166,
+      "x1": 338.3,
+      "y1": 543.4,
+      "x2": 854.9,
+      "y2": 595.2,
+      "source": "yolo",
+      "evidence": [
+        {
+          "class": "Textbox",
+          "confidence": 0.166,
+          "x1": 338.3,
+          "y1": 543.4,
+          "x2": 854.9,
+          "y2": 595.2,
+          "image": "original"
+        }
+      ]
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.287,
+      "x1": 343,
+      "y1": 586,
+      "x2": 1061,
+      "y2": 674,
+      "source": "yolo",
+      "evidence": [
+        {
+          "class": "Textbox",
+          "confidence": 0.287,
+          "x1": 574,
+          "y1": 576.7,
+          "x2": 1059.7,
+          "y2": 685,
+          "image": "processed"
+        },
+        {
+          "class": "Image",
+          "confidence": 0.249,
+          "x1": 320.8,
+          "y1": 544.9,
+          "x2": 1071,
+          "y2": 673.8,
+          "image": "processed"
+        }
+      ],
+      "filled": false,
+      "fill_fraction": 0.003,
+      "fill_color": "#c3bfbc",
+      "outline": true
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.75,
+      "x1": 345,
+      "y1": 783,
+      "x2": 1060,
+      "y2": 873,
+      "source": "yolo",
+      "evidence": [
+        {
+          "class": "Textbox",
+          "confidence": 0.75,
+          "x1": 596,
+          "y1": 770.6,
+          "x2": 1072.7,
+          "y2": 884.3,
+          "image": "processed"
+        },
+        {
+          "class": "Textbox",
+          "confidence": 0.589,
+          "x1": 334.2,
+          "y1": 773.8,
+          "x2": 794.5,
+          "y2": 881,
+          "image": "processed"
+        }
+      ],
+      "filled": false,
+      "fill_fraction": 0.011,
+      "fill_color": "#a6a2a1",
+      "outline": true
+    },
+    {
+      "class": "Subheading",
+      "confidence": 0.24,
+      "x1": 309.4,
+      "y1": 907.8,
+      "x2": 1083.4,
+      "y2": 997.3,
+      "source": "yolo",
+      "evidence": [
+        {
+          "class": "Subheading",
+          "confidence": 0.24,
+          "x1": 309.4,
+          "y1": 907.8,
+          "x2": 1083.4,
+          "y2": 997.3,
+          "image": "processed"
+        },
+        {
+          "class": "Subheading",
+          "confidence": 0.229,
+          "x1": 348.6,
+          "y1": 908.1,
+          "x2": 1052.2,
+          "y2": 989.8,
+          "image": "original"
+        }
+      ]
+    }
+  ],
+  "original_detections": [
+    {
+      "class": "Button",
+      "confidence": 0.743,
+      "x1": 335.2,
+      "y1": 458.6,
+      "x2": 1041.4,
+      "y2": 558.8
+    },
+    {
+      "class": "Label",
+      "confidence": 0.331,
+      "x1": 580.9,
+      "y1": 391.3,
+      "x2": 658.6,
+      "y2": 433.4
+    },
+    {
+      "class": "Paragraph",
+      "confidence": 0.299,
+      "x1": 1165.7,
+      "y1": 117.9,
+      "x2": 1401.9,
+      "y2": 203
+    },
+    {
+      "class": "Textarea",
+      "confidence": 0.29,
+      "x1": 349.2,
+      "y1": 461.8,
+      "x2": 1064.9,
+      "y2": 558.1
+    },
+    {
+      "class": "Subheading",
+      "confidence": 0.229,
+      "x1": 348.6,
+      "y1": 908.1,
+      "x2": 1052.2,
+      "y2": 989.8
+    },
+    {
+      "class": "Check Box",
+      "confidence": 0.171,
+      "x1": 587.5,
+      "y1": 216.6,
+      "x2": 810.6,
+      "y2": 323.6
+    },
+    {
+      "class": "Button",
+      "confidence": 0.167,
+      "x1": 359.6,
+      "y1": 469.9,
+      "x2": 697.6,
+      "y2": 552.4
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.166,
+      "x1": 338.3,
+      "y1": 543.4,
+      "x2": 854.9,
+      "y2": 595.2
+    }
+  ],
+  "processed_detections": [
+    {
+      "class": "Textbox",
+      "confidence": 0.75,
+      "x1": 596,
+      "y1": 770.6,
+      "x2": 1072.7,
+      "y2": 884.3
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.589,
+      "x1": 334.2,
+      "y1": 773.8,
+      "x2": 794.5,
+      "y2": 881
+    },
+    {
+      "class": "Button",
+      "confidence": 0.381,
+      "x1": 334.5,
+      "y1": 459.6,
+      "x2": 1033.6,
+      "y2": 561.1
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.287,
+      "x1": 574,
+      "y1": 576.7,
+      "x2": 1059.7,
+      "y2": 685
+    },
+    {
+      "class": "Label",
+      "confidence": 0.266,
+      "x1": 580.3,
+      "y1": 391.5,
+      "x2": 657.8,
+      "y2": 433.8
+    },
+    {
+      "class": "Image",
+      "confidence": 0.249,
+      "x1": 320.8,
+      "y1": 544.9,
+      "x2": 1071,
+      "y2": 673.8
+    },
+    {
+      "class": "Subheading",
+      "confidence": 0.24,
+      "x1": 309.4,
+      "y1": 907.8,
+      "x2": 1083.4,
+      "y2": 997.3
+    },
+    {
+      "class": "Radio Button",
+      "confidence": 0.205,
+      "x1": 584.6,
+      "y1": 210.3,
+      "x2": 809.6,
+      "y2": 326
+    },
+    {
+      "class": "Table data",
+      "confidence": 0.193,
+      "x1": 261,
+      "y1": 531.4,
+      "x2": 907.7,
+      "y2": 1035.7
+    }
+  ],
+  "rectangles": [
+    {
+      "x1": 342,
+      "y1": 470,
+      "x2": 1060,
+      "y2": 553,
+      "filled": false,
+      "fill_fraction": 0,
+      "fill_color": "#c4c0bd"
+    },
+    {
+      "x1": 343,
+      "y1": 586,
+      "x2": 1061,
+      "y2": 674,
+      "filled": false,
+      "fill_fraction": 0.003,
+      "fill_color": "#c3bfbc"
+    },
+    {
+      "x1": 345,
+      "y1": 783,
+      "x2": 1060,
+      "y2": 873,
+      "filled": false,
+      "fill_fraction": 0.011,
+      "fill_color": "#a6a2a1"
+    }
+  ],
+  "markers": [
+    {
+      "x1": 721,
+      "y1": 940,
+      "x2": 735,
+      "y2": 958,
+      "square": false,
+      "circularity": 0.858,
+      "shape": "round"
+    },
+    {
+      "x1": 457,
+      "y1": 940,
+      "x2": 471,
+      "y2": 958,
+      "square": false,
+      "circularity": 0.868,
+      "shape": "round"
+    },
+    {
+      "x1": 988,
+      "y1": 707,
+      "x2": 1000,
+      "y2": 723,
+      "square": false,
+      "circularity": 0.897,
+      "shape": "round"
+    },
+    {
+      "x1": 854,
+      "y1": 707,
+      "x2": 867,
+      "y2": 724,
+      "square": false,
+      "circularity": 0.845,
+      "shape": "round"
+    },
+    {
+      "x1": 810,
+      "y1": 707,
+      "x2": 823,
+      "y2": 723,
+      "square": false,
+      "circularity": 0.901,
+      "shape": "round"
+    },
+    {
+      "x1": 742,
+      "y1": 401,
+      "x2": 757,
+      "y2": 418,
+      "square": false,
+      "circularity": 0.887,
+      "shape": "round"
+    },
+    {
+      "x1": 604,
+      "y1": 401,
+      "x2": 619,
+      "y2": 419,
+      "square": false,
+      "circularity": 0.878,
+      "shape": "round"
+    },
+    {
+      "x1": 853,
+      "y1": 357,
+      "x2": 865,
+      "y2": 371,
+      "square": false,
+      "circularity": 0.867,
+      "shape": "round"
+    },
+    {
+      "x1": 596,
+      "y1": 357,
+      "x2": 608,
+      "y2": 371,
+      "square": false,
+      "circularity": 0.854,
+      "shape": "round"
+    },
+    {
+      "x1": 852,
+      "y1": 355,
+      "x2": 867,
+      "y2": 373,
+      "square": false,
+      "circularity": 0.875,
+      "shape": "round"
+    },
+    {
+      "x1": 760,
+      "y1": 355,
+      "x2": 777,
+      "y2": 373,
+      "square": false,
+      "circularity": 0.566,
+      "shape": "unknown"
+    },
+    {
+      "x1": 507,
+      "y1": 355,
+      "x2": 522,
+      "y2": 373,
+      "square": false,
+      "circularity": 0.87,
+      "shape": "round"
+    },
+    {
+      "x1": 957,
+      "y1": 354,
+      "x2": 972,
+      "y2": 372,
+      "square": false,
+      "circularity": 0.869,
+      "shape": "round"
+    },
+    {
+      "x1": 714,
+      "y1": 342,
+      "x2": 727,
+      "y2": 358,
+      "square": false,
+      "circularity": 0.891,
+      "shape": "round"
+    },
+    {
+      "x1": 649,
+      "y1": 260,
+      "x2": 674,
+      "y2": 288,
+      "square": false,
+      "circularity": 0.897,
+      "shape": "round"
+    },
+    {
+      "x1": 691,
+      "y1": 259,
+      "x2": 714,
+      "y2": 287,
+      "square": false,
+      "circularity": 0.847,
+      "shape": "round"
+    },
+    {
+      "x1": 644,
+      "y1": 254,
+      "x2": 678,
+      "y2": 293,
+      "square": false,
+      "circularity": 0.891,
+      "shape": "round"
+    }
+  ],
+  "container_candidates": [
+    {
+      "x1": 272,
+      "y1": 121,
+      "x2": 1131,
+      "y2": 1027,
+      "source": "opencv-container-candidate"
+    }
+  ],
+  "raw_ocr_texts": [
+    {
+      "text": "Login",
+      "confidence": 1,
+      "box": [
+        [
+          576,
+          211
+        ],
+        [
+          820,
+          211
+        ],
+        [
+          820,
+          339
+        ],
+        [
+          576,
+          339
+        ]
+      ]
+    },
+    {
+      "text": "Welcome back! Please login to",
+      "confidence": 0.618,
+      "box": [
+        [
+          425,
+          331
+        ],
+        [
+          979,
+          331
+        ],
+        [
+          979,
+          398
+        ],
+        [
+          425,
+          398
+        ]
+      ]
+    },
+    {
+      "text": "your",
+      "confidence": 0.983,
+      "box": [
+        [
+          581,
+          395
+        ],
+        [
+          661,
+          395
+        ],
+        [
+          661,
+          437
+        ],
+        [
+          581,
+          437
+        ]
+      ]
+    },
+    {
+      "text": "account.",
+      "confidence": 0.919,
+      "box": [
+        [
+          682,
+          381
+        ],
+        [
+          831,
+          381
+        ],
+        [
+          831,
+          437
+        ],
+        [
+          682,
+          437
+        ]
+      ]
+    },
+    {
+      "text": "Email",
+      "confidence": 1,
+      "box": [
+        [
+          371,
+          491
+        ],
+        [
+          463,
+          491
+        ],
+        [
+          463,
+          533
+        ],
+        [
+          371,
+          533
+        ]
+      ]
+    },
+    {
+      "text": "or",
+      "confidence": 0.684,
+      "box": [
+        [
+          476,
+          504
+        ],
+        [
+          510,
+          504
+        ],
+        [
+          510,
+          532
+        ],
+        [
+          476,
+          532
+        ]
+      ]
+    },
+    {
+      "text": "Username",
+      "confidence": 1,
+      "box": [
+        [
+          523,
+          493
+        ],
+        [
+          687,
+          493
+        ],
+        [
+          687,
+          533
+        ],
+        [
+          523,
+          533
+        ]
+      ]
+    },
+    {
+      "text": "Password",
+      "confidence": 1,
+      "box": [
+        [
+          375,
+          611
+        ],
+        [
+          525,
+          611
+        ],
+        [
+          525,
+          653
+        ],
+        [
+          375,
+          653
+        ]
+      ]
+    },
+    {
+      "text": "Forgot_password?",
+      "confidence": 0.651,
+      "box": [
+        [
+          787,
+          685
+        ],
+        [
+          1061,
+          685
+        ],
+        [
+          1061,
+          746
+        ],
+        [
+          787,
+          746
+        ]
+      ]
+    },
+    {
+      "text": "Login",
+      "confidence": 0.999,
+      "box": [
+        [
+          627,
+          800
+        ],
+        [
+          763,
+          800
+        ],
+        [
+          763,
+          874
+        ],
+        [
+          627,
+          874
+        ]
+      ]
+    },
+    {
+      "text": "Dont",
+      "confidence": 0.998,
+      "box": [
+        [
+          433,
+          923
+        ],
+        [
+          513,
+          923
+        ],
+        [
+          513,
+          965
+        ],
+        [
+          433,
+          965
+        ]
+      ]
+    },
+    {
+      "text": "have",
+      "confidence": 0.879,
+      "box": [
+        [
+          525,
+          923
+        ],
+        [
+          601,
+          923
+        ],
+        [
+          601,
+          965
+        ],
+        [
+          525,
+          965
+        ]
+      ]
+    },
+    {
+      "text": "an",
+      "confidence": 0.958,
+      "box": [
+        [
+          612,
+          934
+        ],
+        [
+          654,
+          934
+        ],
+        [
+          654,
+          964
+        ],
+        [
+          612,
+          964
+        ]
+      ]
+    },
+    {
+      "text": "account?",
+      "confidence": 1,
+      "box": [
+        [
+          667,
+          923
+        ],
+        [
+          811,
+          923
+        ],
+        [
+          811,
+          965
+        ],
+        [
+          667,
+          965
+        ]
+      ]
+    },
+    {
+      "text": "Sign_up",
+      "confidence": 0.928,
+      "box": [
+        [
+          833,
+          921
+        ],
+        [
+          975,
+          921
+        ],
+        [
+          975,
+          981
+        ],
+        [
+          833,
+          981
+        ]
+      ]
+    }
+  ],
+  "ocr_texts": [
+    {
+      "text": "Login",
+      "confidence": 1,
+      "box": [
+        [
+          576,
+          211
+        ],
+        [
+          820,
+          211
+        ],
+        [
+          820,
+          339
+        ],
+        [
+          576,
+          339
+        ]
+      ]
+    },
+    {
+      "text": "Welcome back! Please login to",
+      "confidence": 0.618,
+      "box": [
+        [
+          425,
+          331
+        ],
+        [
+          979,
+          331
+        ],
+        [
+          979,
+          398
+        ],
+        [
+          425,
+          398
+        ]
+      ]
+    },
+    {
+      "text": "your",
+      "confidence": 0.983,
+      "box": [
+        [
+          581,
+          395
+        ],
+        [
+          661,
+          395
+        ],
+        [
+          661,
+          437
+        ],
+        [
+          581,
+          437
+        ]
+      ]
+    },
+    {
+      "text": "account.",
+      "confidence": 0.919,
+      "box": [
+        [
+          682,
+          381
+        ],
+        [
+          831,
+          381
+        ],
+        [
+          831,
+          437
+        ],
+        [
+          682,
+          437
+        ]
+      ]
+    },
+    {
+      "text": "Email",
+      "confidence": 1,
+      "box": [
+        [
+          371,
+          491
+        ],
+        [
+          463,
+          491
+        ],
+        [
+          463,
+          533
+        ],
+        [
+          371,
+          533
+        ]
+      ]
+    },
+    {
+      "text": "or",
+      "confidence": 0.684,
+      "box": [
+        [
+          476,
+          504
+        ],
+        [
+          510,
+          504
+        ],
+        [
+          510,
+          532
+        ],
+        [
+          476,
+          532
+        ]
+      ]
+    },
+    {
+      "text": "Username",
+      "confidence": 1,
+      "box": [
+        [
+          523,
+          493
+        ],
+        [
+          687,
+          493
+        ],
+        [
+          687,
+          533
+        ],
+        [
+          523,
+          533
+        ]
+      ]
+    },
+    {
+      "text": "Password",
+      "confidence": 1,
+      "box": [
+        [
+          375,
+          611
+        ],
+        [
+          525,
+          611
+        ],
+        [
+          525,
+          653
+        ],
+        [
+          375,
+          653
+        ]
+      ]
+    },
+    {
+      "text": "Forgot_password?",
+      "confidence": 0.651,
+      "box": [
+        [
+          787,
+          685
+        ],
+        [
+          1061,
+          685
+        ],
+        [
+          1061,
+          746
+        ],
+        [
+          787,
+          746
+        ]
+      ]
+    },
+    {
+      "text": "Login",
+      "confidence": 0.999,
+      "box": [
+        [
+          627,
+          800
+        ],
+        [
+          763,
+          800
+        ],
+        [
+          763,
+          874
+        ],
+        [
+          627,
+          874
+        ]
+      ],
+      "underlined": true
+    },
+    {
+      "text": "Dont",
+      "confidence": 0.998,
+      "box": [
+        [
+          433,
+          923
+        ],
+        [
+          513,
+          923
+        ],
+        [
+          513,
+          965
+        ],
+        [
+          433,
+          965
+        ]
+      ]
+    },
+    {
+      "text": "have",
+      "confidence": 0.879,
+      "box": [
+        [
+          525,
+          923
+        ],
+        [
+          601,
+          923
+        ],
+        [
+          601,
+          965
+        ],
+        [
+          525,
+          965
+        ]
+      ]
+    },
+    {
+      "text": "an",
+      "confidence": 0.958,
+      "box": [
+        [
+          612,
+          934
+        ],
+        [
+          654,
+          934
+        ],
+        [
+          654,
+          964
+        ],
+        [
+          612,
+          964
+        ]
+      ]
+    },
+    {
+      "text": "account?",
+      "confidence": 1,
+      "box": [
+        [
+          667,
+          923
+        ],
+        [
+          811,
+          923
+        ],
+        [
+          811,
+          965
+        ],
+        [
+          667,
+          965
+        ]
+      ]
+    },
+    {
+      "text": "Sign_up",
+      "confidence": 0.928,
+      "box": [
+        [
+          833,
+          921
+        ],
+        [
+          975,
+          921
+        ],
+        [
+          975,
+          981
+        ],
+        [
+          833,
+          981
+        ]
+      ]
+    }
+  ],
+  "mapped_components": [
+    {
+      "x1": 576,
+      "y1": 211,
+      "x2": 820,
+      "y2": 339,
+      "id": "ocr-0",
+      "class": "Heading",
+      "texts": [
+        "Login"
+      ],
+      "ocr": [
+        {
+          "text": "Login",
+          "confidence": 1,
+          "box": [
+            [
+              576,
+              211
+            ],
+            [
+              820,
+              211
+            ],
+            [
+              820,
+              339
+            ],
+            [
+              576,
+              339
+            ]
+          ],
+          "x1": 576,
+          "y1": 211,
+          "x2": 820,
+          "y2": 339,
+          "ocr_id": 0
+        }
+      ],
+      "confidence": 1,
+      "source": "ocr",
+      "corrections": [
+        "Text retained using OCR geometry."
+      ]
+    },
+    {
+      "x1": 425,
+      "y1": 331,
+      "x2": 979,
+      "y2": 398,
+      "id": "ocr-1",
+      "class": "Paragraph",
+      "texts": [
+        "Welcome back! Please login to"
+      ],
+      "ocr": [
+        {
+          "text": "Welcome back! Please login to",
+          "confidence": 0.618,
+          "box": [
+            [
+              425,
+              331
+            ],
+            [
+              979,
+              331
+            ],
+            [
+              979,
+              398
+            ],
+            [
+              425,
+              398
+            ]
+          ],
+          "x1": 425,
+          "y1": 331,
+          "x2": 979,
+          "y2": 398,
+          "ocr_id": 1
+        }
+      ],
+      "confidence": 0.618,
+      "source": "ocr",
+      "corrections": [
+        "Text retained using OCR geometry."
+      ]
+    },
+    {
+      "x1": 581,
+      "y1": 381,
+      "x2": 831,
+      "y2": 437,
+      "id": "ocr-2",
+      "class": "Paragraph",
+      "texts": [
+        "your",
+        "account."
+      ],
+      "ocr": [
+        {
+          "text": "your",
+          "confidence": 0.983,
+          "box": [
+            [
+              581,
+              395
+            ],
+            [
+              661,
+              395
+            ],
+            [
+              661,
+              437
+            ],
+            [
+              581,
+              437
+            ]
+          ],
+          "x1": 581,
+          "y1": 395,
+          "x2": 661,
+          "y2": 437,
+          "ocr_id": 2
+        },
+        {
+          "text": "account.",
+          "confidence": 0.919,
+          "box": [
+            [
+              682,
+              381
+            ],
+            [
+              831,
+              381
+            ],
+            [
+              831,
+              437
+            ],
+            [
+              682,
+              437
+            ]
+          ],
+          "x1": 682,
+          "y1": 381,
+          "x2": 831,
+          "y2": 437,
+          "ocr_id": 3
+        }
+      ],
+      "confidence": 0.983,
+      "source": "ocr",
+      "corrections": [
+        "Text retained using OCR geometry."
+      ]
+    },
+    {
+      "class": "Textbox",
+      "confidence": 0.743,
+      "x1": 342,
+      "y1": 470,
+      "x2": 1060,
+      "y2": 553,
+      "source": "yolo",
+      "evidence": [
+        {
+          "class": "Button",
+          "confidence": 0.743,
+          "x1": 335.2,
+          "y1": 458.6,
+          "x2": 1041.4,
+          "y2": 558.8,
+          "image": "original"
+        },
+        {
+          "class": "Button",
+          "confidence": 0.381,
+          "x1": 334.5,
+          "y1": 459.6,
+          "x2": 1033.6,
+          "y2": 561.1,
+          "image": "processed"
+        },
+        {
+          "class": "Textarea",
+          "confidence": 0.29,
+          "x1": 349.2,
+          "y1": 461.8,
+          "x2": 1064.9,
+          "y2": 558.1,
+          "image": "original"
+        },
+        {
+          "class": "Button",
+          "confidence": 0.167,
+          "x1": 359.6,
+          "y1": 469.9,
+          "x2": 697.6,
+          "y2": 552.4,
+          "image": "original"
+        }
+      ],
+      "filled": false,
+      "fill_fraction": 0,
+      "fill_color": "#c4c0bd",
+      "outline": true,
+      "id": "component-3",
+      "texts": [
+        "Email",
+        "or",
+        "Username"
+      ],
+      "ocr": [
+        {
+          "text": "Email",
+          "confidence": 1,
+          "box": [
+            [
+              371,
+              491
+            ],
+            [
+              463,
+              491
+            ],
+            [
+              463,
+              533
+            ],
+            [
+              371,
+              533
+            ]
+          ],
+          "x1": 371,
+          "y1": 491,
+          "x2": 463,
+          "y2": 533,
+          "ocr_id": 4
+        },
+        {
+          "text": "or",
+          "confidence": 0.684,
+          "box": [
+            [
+              476,
+              504
+            ],
+            [
+              510,
+              504
+            ],
+            [
+              510,
+              532
+            ],
+            [
+              476,
+              532
+            ]
+          ],
+          "x1": 476,
+          "y1": 504,
+          "x2": 510,
+          "y2": 532,
+          "ocr_id": 5
+        },
+        {
+          "text": "Username",
+          "confidence": 1,
+          "box": [
+            [
+              523,
+              493
+            ],
+            [
+              687,
+              493
+            ],
+            [
+              687,
+              533
+            ],
+            [
+              523,
+              533
+            ]
+          ],
+          "x1": 523,
+          "y1": 493,
+          "x2": 687,
+          "y2": 533,
+          "ocr_id": 6
+        }
+      ],
+      "original_class": "Button",
+      "corrections": [
+        "Field caption in an outlined control aligned with input fields."
+      ],
+      "input_type": "email"
+    },
+    {
+      "class": "Password box",
+      "confidence": 0.287,
+      "x1": 343,
+      "y1": 586,
+      "x2": 1061,
+      "y2": 674,
+      "source": "yolo",
+      "evidence": [
+        {
+          "class": "Textbox",
+          "confidence": 0.287,
+          "x1": 574,
+          "y1": 576.7,
+          "x2": 1059.7,
+          "y2": 685,
+          "image": "processed"
+        },
+        {
+          "class": "Image",
+          "confidence": 0.249,
+          "x1": 320.8,
+          "y1": 544.9,
+          "x2": 1071,
+          "y2": 673.8,
+          "image": "processed"
+        }
+      ],
+      "filled": false,
+      "fill_fraction": 0.003,
+      "fill_color": "#c3bfbc",
+      "outline": true,
+      "id": "component-4",
+      "texts": [
+        "Password"
+      ],
+      "ocr": [
+        {
+          "text": "Password",
+          "confidence": 1,
+          "box": [
+            [
+              375,
+              611
+            ],
+            [
+              525,
+              611
+            ],
+            [
+              525,
+              653
+            ],
+            [
+              375,
+              653
+            ]
+          ],
+          "x1": 375,
+          "y1": 611,
+          "x2": 525,
+          "y2": 653,
+          "ocr_id": 7
+        }
+      ],
+      "original_class": "Textbox",
+      "corrections": [
+        "Field caption in an outlined control aligned with input fields."
+      ]
+    },
+    {
+      "x1": 787,
+      "y1": 685,
+      "x2": 1061,
+      "y2": 746,
+      "id": "ocr-8",
+      "class": "Link",
+      "texts": [
+        "Forgot password?"
+      ],
+      "ocr": [
+        {
+          "text": "Forgot_password?",
+          "confidence": 0.651,
+          "box": [
+            [
+              787,
+              685
+            ],
+            [
+              1061,
+              685
+            ],
+            [
+              1061,
+              746
+            ],
+            [
+              787,
+              746
+            ]
+          ],
+          "x1": 787,
+          "y1": 685,
+          "x2": 1061,
+          "y2": 746,
+          "ocr_id": 8,
+          "link_hint": true,
+          "display_text": "Forgot password?"
+        }
+      ],
+      "confidence": 0.651,
+      "source": "ocr",
+      "corrections": [
+        "Text retained using OCR geometry."
+      ]
+    },
+    {
+      "class": "Button",
+      "confidence": 0.75,
+      "x1": 345,
+      "y1": 783,
+      "x2": 1060,
+      "y2": 873,
+      "source": "yolo",
+      "evidence": [
+        {
+          "class": "Textbox",
+          "confidence": 0.75,
+          "x1": 596,
+          "y1": 770.6,
+          "x2": 1072.7,
+          "y2": 884.3,
+          "image": "processed"
+        },
+        {
+          "class": "Textbox",
+          "confidence": 0.589,
+          "x1": 334.2,
+          "y1": 773.8,
+          "x2": 794.5,
+          "y2": 881,
+          "image": "processed"
+        }
+      ],
+      "filled": false,
+      "fill_fraction": 0.011,
+      "fill_color": "#a6a2a1",
+      "outline": true,
+      "id": "component-5",
+      "texts": [
+        "Login"
+      ],
+      "ocr": [
+        {
+          "text": "Login",
+          "confidence": 0.999,
+          "box": [
+            [
+              627,
+              800
+            ],
+            [
+              763,
+              800
+            ],
+            [
+              763,
+              874
+            ],
+            [
+              627,
+              874
+            ]
+          ],
+          "underlined": true,
+          "x1": 627,
+          "y1": 800,
+          "x2": 763,
+          "y2": 874,
+          "ocr_id": 9
+        }
+      ],
+      "original_class": "Textbox",
+      "corrections": [
+        "Short action caption inside a rectangular control."
+      ]
+    },
+    {
+      "x1": 433,
+      "y1": 923,
+      "x2": 811,
+      "y2": 965,
+      "id": "ocr-10",
+      "class": "Paragraph",
+      "texts": [
+        "Dont",
+        "have",
+        "an",
+        "account?"
+      ],
+      "ocr": [
+        {
+          "text": "Dont",
+          "confidence": 0.998,
+          "box": [
+            [
+              433,
+              923
+            ],
+            [
+              513,
+              923
+            ],
+            [
+              513,
+              965
+            ],
+            [
+              433,
+              965
+            ]
+          ],
+          "x1": 433,
+          "y1": 923,
+          "x2": 513,
+          "y2": 965,
+          "ocr_id": 10
+        },
+        {
+          "text": "have",
+          "confidence": 0.879,
+          "box": [
+            [
+              525,
+              923
+            ],
+            [
+              601,
+              923
+            ],
+            [
+              601,
+              965
+            ],
+            [
+              525,
+              965
+            ]
+          ],
+          "x1": 525,
+          "y1": 923,
+          "x2": 601,
+          "y2": 965,
+          "ocr_id": 11
+        },
+        {
+          "text": "an",
+          "confidence": 0.958,
+          "box": [
+            [
+              612,
+              934
+            ],
+            [
+              654,
+              934
+            ],
+            [
+              654,
+              964
+            ],
+            [
+              612,
+              964
+            ]
+          ],
+          "x1": 612,
+          "y1": 934,
+          "x2": 654,
+          "y2": 964,
+          "ocr_id": 12
+        },
+        {
+          "text": "account?",
+          "confidence": 1,
+          "box": [
+            [
+              667,
+              923
+            ],
+            [
+              811,
+              923
+            ],
+            [
+              811,
+              965
+            ],
+            [
+              667,
+              965
+            ]
+          ],
+          "x1": 667,
+          "y1": 923,
+          "x2": 811,
+          "y2": 965,
+          "ocr_id": 13
+        }
+      ],
+      "confidence": 0.998,
+      "source": "ocr",
+      "corrections": [
+        "Text retained using OCR geometry."
+      ]
+    },
+    {
+      "x1": 833,
+      "y1": 921,
+      "x2": 975,
+      "y2": 981,
+      "id": "ocr-14",
+      "class": "Link",
+      "texts": [
+        "Sign up"
+      ],
+      "ocr": [
+        {
+          "text": "Sign_up",
+          "confidence": 0.928,
+          "box": [
+            [
+              833,
+              921
+            ],
+            [
+              975,
+              921
+            ],
+            [
+              975,
+              981
+            ],
+            [
+              833,
+              981
+            ]
+          ],
+          "x1": 833,
+          "y1": 921,
+          "x2": 975,
+          "y2": 981,
+          "ocr_id": 14,
+          "link_hint": true,
+          "display_text": "Sign up"
+        }
+      ],
+      "confidence": 0.928,
+      "source": "ocr",
+      "corrections": [
+        "Text retained using OCR geometry."
+      ]
+    }
+  ],
+  "layout": {
+    "mode": "spatial",
+    "page": {
+      "width": 719,
+      "height": 770,
+      "text_height": 67
+    },
+    "rows": [
+      {
+        "components": [
+          {
+            "x1": 576,
+            "y1": 211,
+            "x2": 820,
+            "y2": 339,
+            "id": "ocr-0",
+            "class": "Heading",
+            "texts": [
+              "Login"
+            ],
+            "ocr": [
+              {
+                "text": "Login",
+                "confidence": 1,
+                "box": [
+                  [
+                    576,
+                    211
+                  ],
+                  [
+                    820,
+                    211
+                  ],
+                  [
+                    820,
+                    339
+                  ],
+                  [
+                    576,
+                    339
+                  ]
+                ],
+                "x1": 576,
+                "y1": 211,
+                "x2": 820,
+                "y2": 339,
+                "ocr_id": 0
+              }
+            ],
+            "confidence": 1,
+            "source": "ocr",
+            "corrections": [
+              "Text retained using OCR geometry."
+            ],
+            "pixel_width": 244,
+            "pixel_height": 128,
+            "grid_start": 1,
+            "grid_span": 24,
+            "align": "center"
+          }
+        ],
+        "y1": 211,
+        "y2": 339,
+        "row": 1,
+        "gap_before": 0
+      },
+      {
+        "components": [
+          {
+            "x1": 425,
+            "y1": 331,
+            "x2": 979,
+            "y2": 398,
+            "id": "ocr-1",
+            "class": "Paragraph",
+            "texts": [
+              "Welcome back! Please login to"
+            ],
+            "ocr": [
+              {
+                "text": "Welcome back! Please login to",
+                "confidence": 0.618,
+                "box": [
+                  [
+                    425,
+                    331
+                  ],
+                  [
+                    979,
+                    331
+                  ],
+                  [
+                    979,
+                    398
+                  ],
+                  [
+                    425,
+                    398
+                  ]
+                ],
+                "x1": 425,
+                "y1": 331,
+                "x2": 979,
+                "y2": 398,
+                "ocr_id": 1
+              }
+            ],
+            "confidence": 0.618,
+            "source": "ocr",
+            "corrections": [
+              "Text retained using OCR geometry."
+            ],
+            "pixel_width": 554,
+            "pixel_height": 67,
+            "grid_start": 1,
+            "grid_span": 24,
+            "align": "center"
+          }
+        ],
+        "y1": 331,
+        "y2": 398,
+        "row": 2,
+        "gap_before": 0
+      },
+      {
+        "components": [
+          {
+            "x1": 581,
+            "y1": 381,
+            "x2": 831,
+            "y2": 437,
+            "id": "ocr-2",
+            "class": "Paragraph",
+            "texts": [
+              "your",
+              "account."
+            ],
+            "ocr": [
+              {
+                "text": "your",
+                "confidence": 0.983,
+                "box": [
+                  [
+                    581,
+                    395
+                  ],
+                  [
+                    661,
+                    395
+                  ],
+                  [
+                    661,
+                    437
+                  ],
+                  [
+                    581,
+                    437
+                  ]
+                ],
+                "x1": 581,
+                "y1": 395,
+                "x2": 661,
+                "y2": 437,
+                "ocr_id": 2
+              },
+              {
+                "text": "account.",
+                "confidence": 0.919,
+                "box": [
+                  [
+                    682,
+                    381
+                  ],
+                  [
+                    831,
+                    381
+                  ],
+                  [
+                    831,
+                    437
+                  ],
+                  [
+                    682,
+                    437
+                  ]
+                ],
+                "x1": 682,
+                "y1": 381,
+                "x2": 831,
+                "y2": 437,
+                "ocr_id": 3
+              }
+            ],
+            "confidence": 0.983,
+            "source": "ocr",
+            "corrections": [
+              "Text retained using OCR geometry."
+            ],
+            "pixel_width": 250,
+            "pixel_height": 56,
+            "grid_start": 1,
+            "grid_span": 24,
+            "align": "center"
+          }
+        ],
+        "y1": 381,
+        "y2": 437,
+        "row": 3,
+        "gap_before": 0
+      },
+      {
+        "components": [
+          {
+            "class": "Textbox",
+            "confidence": 0.743,
+            "x1": 342,
+            "y1": 470,
+            "x2": 1060,
+            "y2": 553,
+            "source": "yolo",
+            "evidence": [
+              {
+                "class": "Button",
+                "confidence": 0.743,
+                "x1": 335.2,
+                "y1": 458.6,
+                "x2": 1041.4,
+                "y2": 558.8,
+                "image": "original"
+              },
+              {
+                "class": "Button",
+                "confidence": 0.381,
+                "x1": 334.5,
+                "y1": 459.6,
+                "x2": 1033.6,
+                "y2": 561.1,
+                "image": "processed"
+              },
+              {
+                "class": "Textarea",
+                "confidence": 0.29,
+                "x1": 349.2,
+                "y1": 461.8,
+                "x2": 1064.9,
+                "y2": 558.1,
+                "image": "original"
+              },
+              {
+                "class": "Button",
+                "confidence": 0.167,
+                "x1": 359.6,
+                "y1": 469.9,
+                "x2": 697.6,
+                "y2": 552.4,
+                "image": "original"
+              }
+            ],
+            "filled": false,
+            "fill_fraction": 0,
+            "fill_color": "#c4c0bd",
+            "outline": true,
+            "id": "component-3",
+            "texts": [
+              "Email",
+              "or",
+              "Username"
+            ],
+            "ocr": [
+              {
+                "text": "Email",
+                "confidence": 1,
+                "box": [
+                  [
+                    371,
+                    491
+                  ],
+                  [
+                    463,
+                    491
+                  ],
+                  [
+                    463,
+                    533
+                  ],
+                  [
+                    371,
+                    533
+                  ]
+                ],
+                "x1": 371,
+                "y1": 491,
+                "x2": 463,
+                "y2": 533,
+                "ocr_id": 4
+              },
+              {
+                "text": "or",
+                "confidence": 0.684,
+                "box": [
+                  [
+                    476,
+                    504
+                  ],
+                  [
+                    510,
+                    504
+                  ],
+                  [
+                    510,
+                    532
+                  ],
+                  [
+                    476,
+                    532
+                  ]
+                ],
+                "x1": 476,
+                "y1": 504,
+                "x2": 510,
+                "y2": 532,
+                "ocr_id": 5
+              },
+              {
+                "text": "Username",
+                "confidence": 1,
+                "box": [
+                  [
+                    523,
+                    493
+                  ],
+                  [
+                    687,
+                    493
+                  ],
+                  [
+                    687,
+                    533
+                  ],
+                  [
+                    523,
+                    533
+                  ]
+                ],
+                "x1": 523,
+                "y1": 493,
+                "x2": 687,
+                "y2": 533,
+                "ocr_id": 6
+              }
+            ],
+            "original_class": "Button",
+            "corrections": [
+              "Field caption in an outlined control aligned with input fields."
+            ],
+            "input_type": "email",
+            "pixel_width": 718,
+            "pixel_height": 83,
+            "grid_start": 1,
+            "grid_span": 24,
+            "align": "left"
+          }
+        ],
+        "y1": 470,
+        "y2": 553,
+        "row": 4,
+        "gap_before": 33
+      },
+      {
+        "components": [
+          {
+            "class": "Password box",
+            "confidence": 0.287,
+            "x1": 343,
+            "y1": 586,
+            "x2": 1061,
+            "y2": 674,
+            "source": "yolo",
+            "evidence": [
+              {
+                "class": "Textbox",
+                "confidence": 0.287,
+                "x1": 574,
+                "y1": 576.7,
+                "x2": 1059.7,
+                "y2": 685,
+                "image": "processed"
+              },
+              {
+                "class": "Image",
+                "confidence": 0.249,
+                "x1": 320.8,
+                "y1": 544.9,
+                "x2": 1071,
+                "y2": 673.8,
+                "image": "processed"
+              }
+            ],
+            "filled": false,
+            "fill_fraction": 0.003,
+            "fill_color": "#c3bfbc",
+            "outline": true,
+            "id": "component-4",
+            "texts": [
+              "Password"
+            ],
+            "ocr": [
+              {
+                "text": "Password",
+                "confidence": 1,
+                "box": [
+                  [
+                    375,
+                    611
+                  ],
+                  [
+                    525,
+                    611
+                  ],
+                  [
+                    525,
+                    653
+                  ],
+                  [
+                    375,
+                    653
+                  ]
+                ],
+                "x1": 375,
+                "y1": 611,
+                "x2": 525,
+                "y2": 653,
+                "ocr_id": 7
+              }
+            ],
+            "original_class": "Textbox",
+            "corrections": [
+              "Field caption in an outlined control aligned with input fields."
+            ],
+            "pixel_width": 718,
+            "pixel_height": 88,
+            "grid_start": 1,
+            "grid_span": 24,
+            "align": "left"
+          }
+        ],
+        "y1": 586,
+        "y2": 674,
+        "row": 5,
+        "gap_before": 33
+      },
+      {
+        "components": [
+          {
+            "x1": 787,
+            "y1": 685,
+            "x2": 1061,
+            "y2": 746,
+            "id": "ocr-8",
+            "class": "Link",
+            "texts": [
+              "Forgot password?"
+            ],
+            "ocr": [
+              {
+                "text": "Forgot_password?",
+                "confidence": 0.651,
+                "box": [
+                  [
+                    787,
+                    685
+                  ],
+                  [
+                    1061,
+                    685
+                  ],
+                  [
+                    1061,
+                    746
+                  ],
+                  [
+                    787,
+                    746
+                  ]
+                ],
+                "x1": 787,
+                "y1": 685,
+                "x2": 1061,
+                "y2": 746,
+                "ocr_id": 8,
+                "link_hint": true,
+                "display_text": "Forgot password?"
+              }
+            ],
+            "confidence": 0.651,
+            "source": "ocr",
+            "corrections": [
+              "Text retained using OCR geometry."
+            ],
+            "pixel_width": 274,
+            "pixel_height": 61,
+            "grid_start": 16,
+            "grid_span": 9,
+            "align": "left"
+          }
+        ],
+        "y1": 685,
+        "y2": 746,
+        "row": 6,
+        "gap_before": 11
+      },
+      {
+        "components": [
+          {
+            "class": "Button",
+            "confidence": 0.75,
+            "x1": 345,
+            "y1": 783,
+            "x2": 1060,
+            "y2": 873,
+            "source": "yolo",
+            "evidence": [
+              {
+                "class": "Textbox",
+                "confidence": 0.75,
+                "x1": 596,
+                "y1": 770.6,
+                "x2": 1072.7,
+                "y2": 884.3,
+                "image": "processed"
+              },
+              {
+                "class": "Textbox",
+                "confidence": 0.589,
+                "x1": 334.2,
+                "y1": 773.8,
+                "x2": 794.5,
+                "y2": 881,
+                "image": "processed"
+              }
+            ],
+            "filled": false,
+            "fill_fraction": 0.011,
+            "fill_color": "#a6a2a1",
+            "outline": true,
+            "id": "component-5",
+            "texts": [
+              "Login"
+            ],
+            "ocr": [
+              {
+                "text": "Login",
+                "confidence": 0.999,
+                "box": [
+                  [
+                    627,
+                    800
+                  ],
+                  [
+                    763,
+                    800
+                  ],
+                  [
+                    763,
+                    874
+                  ],
+                  [
+                    627,
+                    874
+                  ]
+                ],
+                "underlined": true,
+                "x1": 627,
+                "y1": 800,
+                "x2": 763,
+                "y2": 874,
+                "ocr_id": 9
+              }
+            ],
+            "original_class": "Textbox",
+            "corrections": [
+              "Short action caption inside a rectangular control."
+            ],
+            "pixel_width": 715,
+            "pixel_height": 90,
+            "grid_start": 1,
+            "grid_span": 24,
+            "align": "left"
+          }
+        ],
+        "y1": 783,
+        "y2": 873,
+        "row": 7,
+        "gap_before": 37
+      },
+      {
+        "components": [
+          {
+            "x1": 433,
+            "y1": 923,
+            "x2": 811,
+            "y2": 965,
+            "id": "ocr-10",
+            "class": "Paragraph",
+            "texts": [
+              "Dont",
+              "have",
+              "an",
+              "account?"
+            ],
+            "ocr": [
+              {
+                "text": "Dont",
+                "confidence": 0.998,
+                "box": [
+                  [
+                    433,
+                    923
+                  ],
+                  [
+                    513,
+                    923
+                  ],
+                  [
+                    513,
+                    965
+                  ],
+                  [
+                    433,
+                    965
+                  ]
+                ],
+                "x1": 433,
+                "y1": 923,
+                "x2": 513,
+                "y2": 965,
+                "ocr_id": 10
+              },
+              {
+                "text": "have",
+                "confidence": 0.879,
+                "box": [
+                  [
+                    525,
+                    923
+                  ],
+                  [
+                    601,
+                    923
+                  ],
+                  [
+                    601,
+                    965
+                  ],
+                  [
+                    525,
+                    965
+                  ]
+                ],
+                "x1": 525,
+                "y1": 923,
+                "x2": 601,
+                "y2": 965,
+                "ocr_id": 11
+              },
+              {
+                "text": "an",
+                "confidence": 0.958,
+                "box": [
+                  [
+                    612,
+                    934
+                  ],
+                  [
+                    654,
+                    934
+                  ],
+                  [
+                    654,
+                    964
+                  ],
+                  [
+                    612,
+                    964
+                  ]
+                ],
+                "x1": 612,
+                "y1": 934,
+                "x2": 654,
+                "y2": 964,
+                "ocr_id": 12
+              },
+              {
+                "text": "account?",
+                "confidence": 1,
+                "box": [
+                  [
+                    667,
+                    923
+                  ],
+                  [
+                    811,
+                    923
+                  ],
+                  [
+                    811,
+                    965
+                  ],
+                  [
+                    667,
+                    965
+                  ]
+                ],
+                "x1": 667,
+                "y1": 923,
+                "x2": 811,
+                "y2": 965,
+                "ocr_id": 13
+              }
+            ],
+            "confidence": 0.998,
+            "source": "ocr",
+            "corrections": [
+              "Text retained using OCR geometry."
+            ],
+            "pixel_width": 378,
+            "pixel_height": 42,
+            "grid_start": 4,
+            "grid_span": 13,
+            "align": "left"
+          },
+          {
+            "x1": 833,
+            "y1": 921,
+            "x2": 975,
+            "y2": 981,
+            "id": "ocr-14",
+            "class": "Link",
+            "texts": [
+              "Sign up"
+            ],
+            "ocr": [
+              {
+                "text": "Sign_up",
+                "confidence": 0.928,
+                "box": [
+                  [
+                    833,
+                    921
+                  ],
+                  [
+                    975,
+                    921
+                  ],
+                  [
+                    975,
+                    981
+                  ],
+                  [
+                    833,
+                    981
+                  ]
+                ],
+                "x1": 833,
+                "y1": 921,
+                "x2": 975,
+                "y2": 981,
+                "ocr_id": 14,
+                "link_hint": true,
+                "display_text": "Sign up"
+              }
+            ],
+            "confidence": 0.928,
+            "source": "ocr",
+            "corrections": [
+              "Text retained using OCR geometry."
+            ],
+            "pixel_width": 142,
+            "pixel_height": 60,
+            "grid_start": 17,
+            "grid_span": 5,
+            "align": "left"
+          }
+        ],
+        "y1": 921,
+        "y2": 981,
+        "row": 8,
+        "gap_before": 48
+      }
+    ],
+    "left": [
+      {
+        "components": [
+          {
+            "x1": 576,
+            "y1": 211,
+            "x2": 820,
+            "y2": 339,
+            "id": "ocr-0",
+            "class": "Heading",
+            "texts": [
+              "Login"
+            ],
+            "ocr": [
+              {
+                "text": "Login",
+                "confidence": 1,
+                "box": [
+                  [
+                    576,
+                    211
+                  ],
+                  [
+                    820,
+                    211
+                  ],
+                  [
+                    820,
+                    339
+                  ],
+                  [
+                    576,
+                    339
+                  ]
+                ],
+                "x1": 576,
+                "y1": 211,
+                "x2": 820,
+                "y2": 339,
+                "ocr_id": 0
+              }
+            ],
+            "confidence": 1,
+            "source": "ocr",
+            "corrections": [
+              "Text retained using OCR geometry."
+            ],
+            "pixel_width": 244,
+            "pixel_height": 128,
+            "grid_start": 1,
+            "grid_span": 24,
+            "align": "center"
+          }
+        ],
+        "y1": 211,
+        "y2": 339,
+        "row": 1,
+        "gap_before": 0
+      },
+      {
+        "components": [
+          {
+            "x1": 425,
+            "y1": 331,
+            "x2": 979,
+            "y2": 398,
+            "id": "ocr-1",
+            "class": "Paragraph",
+            "texts": [
+              "Welcome back! Please login to"
+            ],
+            "ocr": [
+              {
+                "text": "Welcome back! Please login to",
+                "confidence": 0.618,
+                "box": [
+                  [
+                    425,
+                    331
+                  ],
+                  [
+                    979,
+                    331
+                  ],
+                  [
+                    979,
+                    398
+                  ],
+                  [
+                    425,
+                    398
+                  ]
+                ],
+                "x1": 425,
+                "y1": 331,
+                "x2": 979,
+                "y2": 398,
+                "ocr_id": 1
+              }
+            ],
+            "confidence": 0.618,
+            "source": "ocr",
+            "corrections": [
+              "Text retained using OCR geometry."
+            ],
+            "pixel_width": 554,
+            "pixel_height": 67,
+            "grid_start": 1,
+            "grid_span": 24,
+            "align": "center"
+          }
+        ],
+        "y1": 331,
+        "y2": 398,
+        "row": 2,
+        "gap_before": 0
+      },
+      {
+        "components": [
+          {
+            "x1": 581,
+            "y1": 381,
+            "x2": 831,
+            "y2": 437,
+            "id": "ocr-2",
+            "class": "Paragraph",
+            "texts": [
+              "your",
+              "account."
+            ],
+            "ocr": [
+              {
+                "text": "your",
+                "confidence": 0.983,
+                "box": [
+                  [
+                    581,
+                    395
+                  ],
+                  [
+                    661,
+                    395
+                  ],
+                  [
+                    661,
+                    437
+                  ],
+                  [
+                    581,
+                    437
+                  ]
+                ],
+                "x1": 581,
+                "y1": 395,
+                "x2": 661,
+                "y2": 437,
+                "ocr_id": 2
+              },
+              {
+                "text": "account.",
+                "confidence": 0.919,
+                "box": [
+                  [
+                    682,
+                    381
+                  ],
+                  [
+                    831,
+                    381
+                  ],
+                  [
+                    831,
+                    437
+                  ],
+                  [
+                    682,
+                    437
+                  ]
+                ],
+                "x1": 682,
+                "y1": 381,
+                "x2": 831,
+                "y2": 437,
+                "ocr_id": 3
+              }
+            ],
+            "confidence": 0.983,
+            "source": "ocr",
+            "corrections": [
+              "Text retained using OCR geometry."
+            ],
+            "pixel_width": 250,
+            "pixel_height": 56,
+            "grid_start": 1,
+            "grid_span": 24,
+            "align": "center"
+          }
+        ],
+        "y1": 381,
+        "y2": 437,
+        "row": 3,
+        "gap_before": 0
+      },
+      {
+        "components": [
+          {
+            "class": "Textbox",
+            "confidence": 0.743,
+            "x1": 342,
+            "y1": 470,
+            "x2": 1060,
+            "y2": 553,
+            "source": "yolo",
+            "evidence": [
+              {
+                "class": "Button",
+                "confidence": 0.743,
+                "x1": 335.2,
+                "y1": 458.6,
+                "x2": 1041.4,
+                "y2": 558.8,
+                "image": "original"
+              },
+              {
+                "class": "Button",
+                "confidence": 0.381,
+                "x1": 334.5,
+                "y1": 459.6,
+                "x2": 1033.6,
+                "y2": 561.1,
+                "image": "processed"
+              },
+              {
+                "class": "Textarea",
+                "confidence": 0.29,
+                "x1": 349.2,
+                "y1": 461.8,
+                "x2": 1064.9,
+                "y2": 558.1,
+                "image": "original"
+              },
+              {
+                "class": "Button",
+                "confidence": 0.167,
+                "x1": 359.6,
+                "y1": 469.9,
+                "x2": 697.6,
+                "y2": 552.4,
+                "image": "original"
+              }
+            ],
+            "filled": false,
+            "fill_fraction": 0,
+            "fill_color": "#c4c0bd",
+            "outline": true,
+            "id": "component-3",
+            "texts": [
+              "Email",
+              "or",
+              "Username"
+            ],
+            "ocr": [
+              {
+                "text": "Email",
+                "confidence": 1,
+                "box": [
+                  [
+                    371,
+                    491
+                  ],
+                  [
+                    463,
+                    491
+                  ],
+                  [
+                    463,
+                    533
+                  ],
+                  [
+                    371,
+                    533
+                  ]
+                ],
+                "x1": 371,
+                "y1": 491,
+                "x2": 463,
+                "y2": 533,
+                "ocr_id": 4
+              },
+              {
+                "text": "or",
+                "confidence": 0.684,
+                "box": [
+                  [
+                    476,
+                    504
+                  ],
+                  [
+                    510,
+                    504
+                  ],
+                  [
+                    510,
+                    532
+                  ],
+                  [
+                    476,
+                    532
+                  ]
+                ],
+                "x1": 476,
+                "y1": 504,
+                "x2": 510,
+                "y2": 532,
+                "ocr_id": 5
+              },
+              {
+                "text": "Username",
+                "confidence": 1,
+                "box": [
+                  [
+                    523,
+                    493
+                  ],
+                  [
+                    687,
+                    493
+                  ],
+                  [
+                    687,
+                    533
+                  ],
+                  [
+                    523,
+                    533
+                  ]
+                ],
+                "x1": 523,
+                "y1": 493,
+                "x2": 687,
+                "y2": 533,
+                "ocr_id": 6
+              }
+            ],
+            "original_class": "Button",
+            "corrections": [
+              "Field caption in an outlined control aligned with input fields."
+            ],
+            "input_type": "email",
+            "pixel_width": 718,
+            "pixel_height": 83,
+            "grid_start": 1,
+            "grid_span": 24,
+            "align": "left"
+          }
+        ],
+        "y1": 470,
+        "y2": 553,
+        "row": 4,
+        "gap_before": 33
+      },
+      {
+        "components": [
+          {
+            "class": "Password box",
+            "confidence": 0.287,
+            "x1": 343,
+            "y1": 586,
+            "x2": 1061,
+            "y2": 674,
+            "source": "yolo",
+            "evidence": [
+              {
+                "class": "Textbox",
+                "confidence": 0.287,
+                "x1": 574,
+                "y1": 576.7,
+                "x2": 1059.7,
+                "y2": 685,
+                "image": "processed"
+              },
+              {
+                "class": "Image",
+                "confidence": 0.249,
+                "x1": 320.8,
+                "y1": 544.9,
+                "x2": 1071,
+                "y2": 673.8,
+                "image": "processed"
+              }
+            ],
+            "filled": false,
+            "fill_fraction": 0.003,
+            "fill_color": "#c3bfbc",
+            "outline": true,
+            "id": "component-4",
+            "texts": [
+              "Password"
+            ],
+            "ocr": [
+              {
+                "text": "Password",
+                "confidence": 1,
+                "box": [
+                  [
+                    375,
+                    611
+                  ],
+                  [
+                    525,
+                    611
+                  ],
+                  [
+                    525,
+                    653
+                  ],
+                  [
+                    375,
+                    653
+                  ]
+                ],
+                "x1": 375,
+                "y1": 611,
+                "x2": 525,
+                "y2": 653,
+                "ocr_id": 7
+              }
+            ],
+            "original_class": "Textbox",
+            "corrections": [
+              "Field caption in an outlined control aligned with input fields."
+            ],
+            "pixel_width": 718,
+            "pixel_height": 88,
+            "grid_start": 1,
+            "grid_span": 24,
+            "align": "left"
+          }
+        ],
+        "y1": 586,
+        "y2": 674,
+        "row": 5,
+        "gap_before": 33
+      },
+      {
+        "components": [
+          {
+            "x1": 787,
+            "y1": 685,
+            "x2": 1061,
+            "y2": 746,
+            "id": "ocr-8",
+            "class": "Link",
+            "texts": [
+              "Forgot password?"
+            ],
+            "ocr": [
+              {
+                "text": "Forgot_password?",
+                "confidence": 0.651,
+                "box": [
+                  [
+                    787,
+                    685
+                  ],
+                  [
+                    1061,
+                    685
+                  ],
+                  [
+                    1061,
+                    746
+                  ],
+                  [
+                    787,
+                    746
+                  ]
+                ],
+                "x1": 787,
+                "y1": 685,
+                "x2": 1061,
+                "y2": 746,
+                "ocr_id": 8,
+                "link_hint": true,
+                "display_text": "Forgot password?"
+              }
+            ],
+            "confidence": 0.651,
+            "source": "ocr",
+            "corrections": [
+              "Text retained using OCR geometry."
+            ],
+            "pixel_width": 274,
+            "pixel_height": 61,
+            "grid_start": 16,
+            "grid_span": 9,
+            "align": "left"
+          }
+        ],
+        "y1": 685,
+        "y2": 746,
+        "row": 6,
+        "gap_before": 11
+      },
+      {
+        "components": [
+          {
+            "class": "Button",
+            "confidence": 0.75,
+            "x1": 345,
+            "y1": 783,
+            "x2": 1060,
+            "y2": 873,
+            "source": "yolo",
+            "evidence": [
+              {
+                "class": "Textbox",
+                "confidence": 0.75,
+                "x1": 596,
+                "y1": 770.6,
+                "x2": 1072.7,
+                "y2": 884.3,
+                "image": "processed"
+              },
+              {
+                "class": "Textbox",
+                "confidence": 0.589,
+                "x1": 334.2,
+                "y1": 773.8,
+                "x2": 794.5,
+                "y2": 881,
+                "image": "processed"
+              }
+            ],
+            "filled": false,
+            "fill_fraction": 0.011,
+            "fill_color": "#a6a2a1",
+            "outline": true,
+            "id": "component-5",
+            "texts": [
+              "Login"
+            ],
+            "ocr": [
+              {
+                "text": "Login",
+                "confidence": 0.999,
+                "box": [
+                  [
+                    627,
+                    800
+                  ],
+                  [
+                    763,
+                    800
+                  ],
+                  [
+                    763,
+                    874
+                  ],
+                  [
+                    627,
+                    874
+                  ]
+                ],
+                "underlined": true,
+                "x1": 627,
+                "y1": 800,
+                "x2": 763,
+                "y2": 874,
+                "ocr_id": 9
+              }
+            ],
+            "original_class": "Textbox",
+            "corrections": [
+              "Short action caption inside a rectangular control."
+            ],
+            "pixel_width": 715,
+            "pixel_height": 90,
+            "grid_start": 1,
+            "grid_span": 24,
+            "align": "left"
+          }
+        ],
+        "y1": 783,
+        "y2": 873,
+        "row": 7,
+        "gap_before": 37
+      },
+      {
+        "components": [
+          {
+            "x1": 433,
+            "y1": 923,
+            "x2": 811,
+            "y2": 965,
+            "id": "ocr-10",
+            "class": "Paragraph",
+            "texts": [
+              "Dont",
+              "have",
+              "an",
+              "account?"
+            ],
+            "ocr": [
+              {
+                "text": "Dont",
+                "confidence": 0.998,
+                "box": [
+                  [
+                    433,
+                    923
+                  ],
+                  [
+                    513,
+                    923
+                  ],
+                  [
+                    513,
+                    965
+                  ],
+                  [
+                    433,
+                    965
+                  ]
+                ],
+                "x1": 433,
+                "y1": 923,
+                "x2": 513,
+                "y2": 965,
+                "ocr_id": 10
+              },
+              {
+                "text": "have",
+                "confidence": 0.879,
+                "box": [
+                  [
+                    525,
+                    923
+                  ],
+                  [
+                    601,
+                    923
+                  ],
+                  [
+                    601,
+                    965
+                  ],
+                  [
+                    525,
+                    965
+                  ]
+                ],
+                "x1": 525,
+                "y1": 923,
+                "x2": 601,
+                "y2": 965,
+                "ocr_id": 11
+              },
+              {
+                "text": "an",
+                "confidence": 0.958,
+                "box": [
+                  [
+                    612,
+                    934
+                  ],
+                  [
+                    654,
+                    934
+                  ],
+                  [
+                    654,
+                    964
+                  ],
+                  [
+                    612,
+                    964
+                  ]
+                ],
+                "x1": 612,
+                "y1": 934,
+                "x2": 654,
+                "y2": 964,
+                "ocr_id": 12
+              },
+              {
+                "text": "account?",
+                "confidence": 1,
+                "box": [
+                  [
+                    667,
+                    923
+                  ],
+                  [
+                    811,
+                    923
+                  ],
+                  [
+                    811,
+                    965
+                  ],
+                  [
+                    667,
+                    965
+                  ]
+                ],
+                "x1": 667,
+                "y1": 923,
+                "x2": 811,
+                "y2": 965,
+                "ocr_id": 13
+              }
+            ],
+            "confidence": 0.998,
+            "source": "ocr",
+            "corrections": [
+              "Text retained using OCR geometry."
+            ],
+            "pixel_width": 378,
+            "pixel_height": 42,
+            "grid_start": 4,
+            "grid_span": 13,
+            "align": "left"
+          },
+          {
+            "x1": 833,
+            "y1": 921,
+            "x2": 975,
+            "y2": 981,
+            "id": "ocr-14",
+            "class": "Link",
+            "texts": [
+              "Sign up"
+            ],
+            "ocr": [
+              {
+                "text": "Sign_up",
+                "confidence": 0.928,
+                "box": [
+                  [
+                    833,
+                    921
+                  ],
+                  [
+                    975,
+                    921
+                  ],
+                  [
+                    975,
+                    981
+                  ],
+                  [
+                    833,
+                    981
+                  ]
+                ],
+                "x1": 833,
+                "y1": 921,
+                "x2": 975,
+                "y2": 981,
+                "ocr_id": 14,
+                "link_hint": true,
+                "display_text": "Sign up"
+              }
+            ],
+            "confidence": 0.928,
+            "source": "ocr",
+            "corrections": [
+              "Text retained using OCR geometry."
+            ],
+            "pixel_width": 142,
+            "pixel_height": 60,
+            "grid_start": 17,
+            "grid_span": 5,
+            "align": "left"
+          }
+        ],
+        "y1": 921,
+        "y2": 981,
+        "row": 8,
+        "gap_before": 48
+      }
+    ],
+    "right": [],
+    "containers": [],
+    "tree": {
+      "kind": "stack",
+      "children": [
+        {
+          "kind": "stack",
+          "children": [
+            {
+              "kind": "component",
+              "component": {
+                "x1": 576,
+                "y1": 211,
+                "x2": 820,
+                "y2": 339,
+                "id": "ocr-0",
+                "class": "Heading",
+                "texts": [
+                  "Login"
+                ],
+                "ocr": [
+                  {
+                    "text": "Login",
+                    "confidence": 1,
+                    "box": [
+                      [
+                        576,
+                        211
+                      ],
+                      [
+                        820,
+                        211
+                      ],
+                      [
+                        820,
+                        339
+                      ],
+                      [
+                        576,
+                        339
+                      ]
+                    ],
+                    "x1": 576,
+                    "y1": 211,
+                    "x2": 820,
+                    "y2": 339,
+                    "ocr_id": 0
+                  }
+                ],
+                "confidence": 1,
+                "source": "ocr",
+                "corrections": [
+                  "Text retained using OCR geometry."
+                ]
+              },
+              "index": 0,
+              "x1": 576,
+              "y1": 211,
+              "x2": 820,
+              "y2": 339
+            },
+            {
+              "kind": "component",
+              "component": {
+                "x1": 425,
+                "y1": 331,
+                "x2": 979,
+                "y2": 398,
+                "id": "ocr-1",
+                "class": "Paragraph",
+                "texts": [
+                  "Welcome back! Please login to"
+                ],
+                "ocr": [
+                  {
+                    "text": "Welcome back! Please login to",
+                    "confidence": 0.618,
+                    "box": [
+                      [
+                        425,
+                        331
+                      ],
+                      [
+                        979,
+                        331
+                      ],
+                      [
+                        979,
+                        398
+                      ],
+                      [
+                        425,
+                        398
+                      ]
+                    ],
+                    "x1": 425,
+                    "y1": 331,
+                    "x2": 979,
+                    "y2": 398,
+                    "ocr_id": 1
+                  }
+                ],
+                "confidence": 0.618,
+                "source": "ocr",
+                "corrections": [
+                  "Text retained using OCR geometry."
+                ]
+              },
+              "index": 1,
+              "x1": 425,
+              "y1": 331,
+              "x2": 979,
+              "y2": 398
+            },
+            {
+              "kind": "component",
+              "component": {
+                "x1": 581,
+                "y1": 381,
+                "x2": 831,
+                "y2": 437,
+                "id": "ocr-2",
+                "class": "Paragraph",
+                "texts": [
+                  "your",
+                  "account."
+                ],
+                "ocr": [
+                  {
+                    "text": "your",
+                    "confidence": 0.983,
+                    "box": [
+                      [
+                        581,
+                        395
+                      ],
+                      [
+                        661,
+                        395
+                      ],
+                      [
+                        661,
+                        437
+                      ],
+                      [
+                        581,
+                        437
+                      ]
+                    ],
+                    "x1": 581,
+                    "y1": 395,
+                    "x2": 661,
+                    "y2": 437,
+                    "ocr_id": 2
+                  },
+                  {
+                    "text": "account.",
+                    "confidence": 0.919,
+                    "box": [
+                      [
+                        682,
+                        381
+                      ],
+                      [
+                        831,
+                        381
+                      ],
+                      [
+                        831,
+                        437
+                      ],
+                      [
+                        682,
+                        437
+                      ]
+                    ],
+                    "x1": 682,
+                    "y1": 381,
+                    "x2": 831,
+                    "y2": 437,
+                    "ocr_id": 3
+                  }
+                ],
+                "confidence": 0.983,
+                "source": "ocr",
+                "corrections": [
+                  "Text retained using OCR geometry."
+                ]
+              },
+              "index": 2,
+              "x1": 581,
+              "y1": 381,
+              "x2": 831,
+              "y2": 437
+            }
+          ],
+          "reason": "No unambiguous whitespace cut.",
+          "x1": 425,
+          "y1": 211,
+          "x2": 979,
+          "y2": 437
+        },
+        {
+          "kind": "component",
+          "component": {
+            "class": "Textbox",
+            "confidence": 0.743,
+            "x1": 342,
+            "y1": 470,
+            "x2": 1060,
+            "y2": 553,
+            "source": "yolo",
+            "evidence": [
+              {
+                "class": "Button",
+                "confidence": 0.743,
+                "x1": 335.2,
+                "y1": 458.6,
+                "x2": 1041.4,
+                "y2": 558.8,
+                "image": "original"
+              },
+              {
+                "class": "Button",
+                "confidence": 0.381,
+                "x1": 334.5,
+                "y1": 459.6,
+                "x2": 1033.6,
+                "y2": 561.1,
+                "image": "processed"
+              },
+              {
+                "class": "Textarea",
+                "confidence": 0.29,
+                "x1": 349.2,
+                "y1": 461.8,
+                "x2": 1064.9,
+                "y2": 558.1,
+                "image": "original"
+              },
+              {
+                "class": "Button",
+                "confidence": 0.167,
+                "x1": 359.6,
+                "y1": 469.9,
+                "x2": 697.6,
+                "y2": 552.4,
+                "image": "original"
+              }
+            ],
+            "filled": false,
+            "fill_fraction": 0,
+            "fill_color": "#c4c0bd",
+            "outline": true,
+            "id": "component-3",
+            "texts": [
+              "Email",
+              "or",
+              "Username"
+            ],
+            "ocr": [
+              {
+                "text": "Email",
+                "confidence": 1,
+                "box": [
+                  [
+                    371,
+                    491
+                  ],
+                  [
+                    463,
+                    491
+                  ],
+                  [
+                    463,
+                    533
+                  ],
+                  [
+                    371,
+                    533
+                  ]
+                ],
+                "x1": 371,
+                "y1": 491,
+                "x2": 463,
+                "y2": 533,
+                "ocr_id": 4
+              },
+              {
+                "text": "or",
+                "confidence": 0.684,
+                "box": [
+                  [
+                    476,
+                    504
+                  ],
+                  [
+                    510,
+                    504
+                  ],
+                  [
+                    510,
+                    532
+                  ],
+                  [
+                    476,
+                    532
+                  ]
+                ],
+                "x1": 476,
+                "y1": 504,
+                "x2": 510,
+                "y2": 532,
+                "ocr_id": 5
+              },
+              {
+                "text": "Username",
+                "confidence": 1,
+                "box": [
+                  [
+                    523,
+                    493
+                  ],
+                  [
+                    687,
+                    493
+                  ],
+                  [
+                    687,
+                    533
+                  ],
+                  [
+                    523,
+                    533
+                  ]
+                ],
+                "x1": 523,
+                "y1": 493,
+                "x2": 687,
+                "y2": 533,
+                "ocr_id": 6
+              }
+            ],
+            "original_class": "Button",
+            "corrections": [
+              "Field caption in an outlined control aligned with input fields."
+            ],
+            "input_type": "email"
+          },
+          "index": 3,
+          "x1": 342,
+          "y1": 470,
+          "x2": 1060,
+          "y2": 553
+        },
+        {
+          "kind": "component",
+          "component": {
+            "class": "Password box",
+            "confidence": 0.287,
+            "x1": 343,
+            "y1": 586,
+            "x2": 1061,
+            "y2": 674,
+            "source": "yolo",
+            "evidence": [
+              {
+                "class": "Textbox",
+                "confidence": 0.287,
+                "x1": 574,
+                "y1": 576.7,
+                "x2": 1059.7,
+                "y2": 685,
+                "image": "processed"
+              },
+              {
+                "class": "Image",
+                "confidence": 0.249,
+                "x1": 320.8,
+                "y1": 544.9,
+                "x2": 1071,
+                "y2": 673.8,
+                "image": "processed"
+              }
+            ],
+            "filled": false,
+            "fill_fraction": 0.003,
+            "fill_color": "#c3bfbc",
+            "outline": true,
+            "id": "component-4",
+            "texts": [
+              "Password"
+            ],
+            "ocr": [
+              {
+                "text": "Password",
+                "confidence": 1,
+                "box": [
+                  [
+                    375,
+                    611
+                  ],
+                  [
+                    525,
+                    611
+                  ],
+                  [
+                    525,
+                    653
+                  ],
+                  [
+                    375,
+                    653
+                  ]
+                ],
+                "x1": 375,
+                "y1": 611,
+                "x2": 525,
+                "y2": 653,
+                "ocr_id": 7
+              }
+            ],
+            "original_class": "Textbox",
+            "corrections": [
+              "Field caption in an outlined control aligned with input fields."
+            ]
+          },
+          "index": 4,
+          "x1": 343,
+          "y1": 586,
+          "x2": 1061,
+          "y2": 674
+        },
+        {
+          "kind": "component",
+          "component": {
+            "x1": 787,
+            "y1": 685,
+            "x2": 1061,
+            "y2": 746,
+            "id": "ocr-8",
+            "class": "Link",
+            "texts": [
+              "Forgot password?"
+            ],
+            "ocr": [
+              {
+                "text": "Forgot_password?",
+                "confidence": 0.651,
+                "box": [
+                  [
+                    787,
+                    685
+                  ],
+                  [
+                    1061,
+                    685
+                  ],
+                  [
+                    1061,
+                    746
+                  ],
+                  [
+                    787,
+                    746
+                  ]
+                ],
+                "x1": 787,
+                "y1": 685,
+                "x2": 1061,
+                "y2": 746,
+                "ocr_id": 8,
+                "link_hint": true,
+                "display_text": "Forgot password?"
+              }
+            ],
+            "confidence": 0.651,
+            "source": "ocr",
+            "corrections": [
+              "Text retained using OCR geometry."
+            ]
+          },
+          "index": 5,
+          "x1": 787,
+          "y1": 685,
+          "x2": 1061,
+          "y2": 746
+        },
+        {
+          "kind": "component",
+          "component": {
+            "class": "Button",
+            "confidence": 0.75,
+            "x1": 345,
+            "y1": 783,
+            "x2": 1060,
+            "y2": 873,
+            "source": "yolo",
+            "evidence": [
+              {
+                "class": "Textbox",
+                "confidence": 0.75,
+                "x1": 596,
+                "y1": 770.6,
+                "x2": 1072.7,
+                "y2": 884.3,
+                "image": "processed"
+              },
+              {
+                "class": "Textbox",
+                "confidence": 0.589,
+                "x1": 334.2,
+                "y1": 773.8,
+                "x2": 794.5,
+                "y2": 881,
+                "image": "processed"
+              }
+            ],
+            "filled": false,
+            "fill_fraction": 0.011,
+            "fill_color": "#a6a2a1",
+            "outline": true,
+            "id": "component-5",
+            "texts": [
+              "Login"
+            ],
+            "ocr": [
+              {
+                "text": "Login",
+                "confidence": 0.999,
+                "box": [
+                  [
+                    627,
+                    800
+                  ],
+                  [
+                    763,
+                    800
+                  ],
+                  [
+                    763,
+                    874
+                  ],
+                  [
+                    627,
+                    874
+                  ]
+                ],
+                "underlined": true,
+                "x1": 627,
+                "y1": 800,
+                "x2": 763,
+                "y2": 874,
+                "ocr_id": 9
+              }
+            ],
+            "original_class": "Textbox",
+            "corrections": [
+              "Short action caption inside a rectangular control."
+            ]
+          },
+          "index": 6,
+          "x1": 345,
+          "y1": 783,
+          "x2": 1060,
+          "y2": 873
+        },
+        {
+          "kind": "row",
+          "children": [
+            {
+              "kind": "component",
+              "component": {
+                "x1": 433,
+                "y1": 923,
+                "x2": 811,
+                "y2": 965,
+                "id": "ocr-10",
+                "class": "Paragraph",
+                "texts": [
+                  "Dont",
+                  "have",
+                  "an",
+                  "account?"
+                ],
+                "ocr": [
+                  {
+                    "text": "Dont",
+                    "confidence": 0.998,
+                    "box": [
+                      [
+                        433,
+                        923
+                      ],
+                      [
+                        513,
+                        923
+                      ],
+                      [
+                        513,
+                        965
+                      ],
+                      [
+                        433,
+                        965
+                      ]
+                    ],
+                    "x1": 433,
+                    "y1": 923,
+                    "x2": 513,
+                    "y2": 965,
+                    "ocr_id": 10
+                  },
+                  {
+                    "text": "have",
+                    "confidence": 0.879,
+                    "box": [
+                      [
+                        525,
+                        923
+                      ],
+                      [
+                        601,
+                        923
+                      ],
+                      [
+                        601,
+                        965
+                      ],
+                      [
+                        525,
+                        965
+                      ]
+                    ],
+                    "x1": 525,
+                    "y1": 923,
+                    "x2": 601,
+                    "y2": 965,
+                    "ocr_id": 11
+                  },
+                  {
+                    "text": "an",
+                    "confidence": 0.958,
+                    "box": [
+                      [
+                        612,
+                        934
+                      ],
+                      [
+                        654,
+                        934
+                      ],
+                      [
+                        654,
+                        964
+                      ],
+                      [
+                        612,
+                        964
+                      ]
+                    ],
+                    "x1": 612,
+                    "y1": 934,
+                    "x2": 654,
+                    "y2": 964,
+                    "ocr_id": 12
+                  },
+                  {
+                    "text": "account?",
+                    "confidence": 1,
+                    "box": [
+                      [
+                        667,
+                        923
+                      ],
+                      [
+                        811,
+                        923
+                      ],
+                      [
+                        811,
+                        965
+                      ],
+                      [
+                        667,
+                        965
+                      ]
+                    ],
+                    "x1": 667,
+                    "y1": 923,
+                    "x2": 811,
+                    "y2": 965,
+                    "ocr_id": 13
+                  }
+                ],
+                "confidence": 0.998,
+                "source": "ocr",
+                "corrections": [
+                  "Text retained using OCR geometry."
+                ]
+              },
+              "index": 7,
+              "x1": 433,
+              "y1": 923,
+              "x2": 811,
+              "y2": 965
+            },
+            {
+              "kind": "component",
+              "component": {
+                "x1": 833,
+                "y1": 921,
+                "x2": 975,
+                "y2": 981,
+                "id": "ocr-14",
+                "class": "Link",
+                "texts": [
+                  "Sign up"
+                ],
+                "ocr": [
+                  {
+                    "text": "Sign_up",
+                    "confidence": 0.928,
+                    "box": [
+                      [
+                        833,
+                        921
+                      ],
+                      [
+                        975,
+                        921
+                      ],
+                      [
+                        975,
+                        981
+                      ],
+                      [
+                        833,
+                        981
+                      ]
+                    ],
+                    "x1": 833,
+                    "y1": 921,
+                    "x2": 975,
+                    "y2": 981,
+                    "ocr_id": 14,
+                    "link_hint": true,
+                    "display_text": "Sign up"
+                  }
+                ],
+                "confidence": 0.928,
+                "source": "ocr",
+                "corrections": [
+                  "Text retained using OCR geometry."
+                ]
+              },
+              "index": 8,
+              "x1": 833,
+              "y1": 921,
+              "x2": 975,
+              "y2": 981
+            }
+          ],
+          "role": "row",
+          "x1": 433,
+          "y1": 921,
+          "x2": 975,
+          "y2": 981
+        }
+      ],
+      "gaps": [
+        33,
+        33,
+        11,
+        37,
+        48
+      ],
+      "x1": 342,
+      "y1": 211,
+      "x2": 1061,
+      "y2": 981
+    },
+    "tree_version": 1
+  },
+  "generated_code": "function GeneratedPage() {\n  return (\n    <main data-sketch-theme=\"light\" className=\"sketch-page min-h-screen bg-[var(--s2c-page)] px-4 py-8 text-[var(--s2c-text)]\">\n      <section className=\"wireframe mx-auto w-full bg-[var(--s2c-surface)] border border-[var(--s2c-border)] rounded-2xl p-6 sm:p-8\" style={{maxWidth: 567}}>\n      <style>{\".sketch-page[data-sketch-theme=\\\"light\\\"]{--s2c-page-image:none;--s2c-accent-image:none;--s2c-accent-hover-image:none;--s2c-wireframe-surface:#ffffff;--s2c-page:#f8fafc;--s2c-surface:#ffffff;--s2c-text:#0f172a;--s2c-muted:#475569;--s2c-border:#64748b;--s2c-soft:#f1f5f9;--s2c-soft-hover:#e2e8f0;--s2c-accent:#1d4ed8;--s2c-accent-hover:#1e40af;--s2c-on-accent:#ffffff;color-scheme:light}\\n.sketch-page[data-sketch-theme=\\\"dark\\\"]{--s2c-page-image:none;--s2c-accent-image:none;--s2c-accent-hover-image:none;--s2c-wireframe-surface:#0f172a;--s2c-page:#020617;--s2c-surface:#0f172a;--s2c-text:#f8fafc;--s2c-muted:#cbd5e1;--s2c-border:#94a3b8;--s2c-soft:#1e293b;--s2c-soft-hover:#334155;--s2c-accent:#93c5fd;--s2c-accent-hover:#bfdbfe;--s2c-on-accent:#0f172a;color-scheme:dark}\\n.sketch-page[data-sketch-theme=\\\"blue\\\"]{--s2c-page-image:none;--s2c-accent-image:none;--s2c-accent-hover-image:none;--s2c-wireframe-surface:#193465;--s2c-page:#152d60;--s2c-surface:#1c396e;--s2c-text:#f7f9fc;--s2c-muted:#c8d5e8;--s2c-border:#7890b4;--s2c-soft:#25467b;--s2c-soft-hover:#30558a;--s2c-accent:#b8cbe5;--s2c-accent-hover:#d0dded;--s2c-on-accent:#152d60;color-scheme:dark}\\n.sketch-page[data-sketch-theme=\\\"purple-gradient\\\"]{--s2c-page-image:linear-gradient(125deg,#ddd6fe 0%,#a78bfa 52%,#f0abfc 100%);--s2c-accent-image:linear-gradient(110deg,#7e22ce,#6d28d9,#4338ca);--s2c-accent-hover-image:linear-gradient(110deg,#6b21a8,#5b21b6,#3730a3);--s2c-wireframe-surface:rgba(250,245,255,.64);--s2c-page:#c4b5fd;--s2c-surface:#faf5ff;--s2c-text:#2e1065;--s2c-muted:#5b467a;--s2c-border:#8060a8;--s2c-soft:#ede9fe;--s2c-soft-hover:#ddd6fe;--s2c-accent:#6d28d9;--s2c-accent-hover:#5b21b6;--s2c-on-accent:#ffffff;color-scheme:light}\\n.sketch-page[data-sketch-theme=\\\"ocean-gradient\\\"]{--s2c-page-image:linear-gradient(180deg,#65d0ce 0%,#299ead 35%,#135178 68%,#102d60 100%);--s2c-accent-image:none;--s2c-accent-hover-image:none;--s2c-wireframe-surface:rgba(244,250,251,.96);--s2c-page:#102d60;--s2c-surface:#f4fafb;--s2c-text:#12344b;--s2c-muted:#3d606e;--s2c-border:#658995;--s2c-soft:#e2f0f2;--s2c-soft-hover:#cde5e9;--s2c-accent:#17677a;--s2c-accent-hover:#125368;--s2c-on-accent:#ffffff;color-scheme:light}\\n.sketch-page[data-sketch-theme=\\\"sunset-gradient\\\"]{--s2c-page-image:linear-gradient(125deg,#fdba74 0%,#fecaca 38%,#f9a8d4 76%,#ddd6fe 100%);--s2c-accent-image:linear-gradient(110deg,#c2410c,#be185d);--s2c-accent-hover-image:linear-gradient(110deg,#9a3412,#9d174d);--s2c-wireframe-surface:rgba(255,247,237,.64);--s2c-page:#fed7aa;--s2c-surface:#fff7ed;--s2c-text:#431407;--s2c-muted:#79433f;--s2c-border:#a45e62;--s2c-soft:#ffe4e6;--s2c-soft-hover:#fed7aa;--s2c-accent:#b01655;--s2c-accent-hover:#9d174d;--s2c-on-accent:#ffffff;color-scheme:light}\\n.sketch-page{background-image:var(--s2c-page-image,none)}\\n.sketch-page>.wireframe{background-color:var(--s2c-wireframe-surface,var(--s2c-surface))}\\n.sketch-page .s2c-primary{background-image:var(--s2c-accent-image,none)}\\n.sketch-page .s2c-primary:hover{background-image:var(--s2c-accent-hover-image,none)}\"}</style>\n        <style>{`\n          .wireframe .sketch-row { display:grid; grid-template-columns:repeat(24,minmax(0,1fr)); align-items:center; }\n          .wireframe .sketch-cell { min-width:0; overflow-wrap:anywhere; grid-column:var(--start) / span var(--span); }\n          @media(max-width:700px) { .wireframe .sketch-row { display:flex; flex-wrap:wrap; gap:12px; } .wireframe .sketch-cell { flex:1 1 max(120px,var(--mobile-width)); } }\n        `}</style>\n        <div className=\"sketch-row\" style={{marginTop: 0}}>\n          <div className=\"sketch-cell\" style={{\"--start\": 1, \"--span\": 24, \"--mobile-width\": \"100%\"}}>\n            <h1 className=\"text-3xl sm:text-4xl font-bold text-[var(--s2c-text)]\" style={{textAlign: \"center\"}}>{\"Login\"}</h1>\n          </div>\n        </div>\n        <div className=\"sketch-row\" style={{marginTop: 8}}>\n          <div className=\"sketch-cell\" style={{\"--start\": 1, \"--span\": 24, \"--mobile-width\": \"100%\"}}>\n            <p className=\"text-sm text-[var(--s2c-muted)]\" style={{textAlign: \"center\"}}>{\"Welcome back! Please login to\"}</p>\n          </div>\n        </div>\n        <div className=\"sketch-row\" style={{marginTop: 0}}>\n          <div className=\"sketch-cell\" style={{\"--start\": 1, \"--span\": 24, \"--mobile-width\": \"100%\"}}>\n            <p className=\"text-sm text-[var(--s2c-muted)]\" style={{textAlign: \"center\"}}>{\"your account.\"}</p>\n          </div>\n        </div>\n        <div className=\"sketch-row\" style={{marginTop: 23}}>\n          <div className=\"sketch-cell\" style={{\"--start\": 1, \"--span\": 24, \"--mobile-width\": \"100%\"}}>\n            <input id={\"component-3\"} type=\"email\" placeholder={\"Email or Username\"} aria-label={\"Email or Username\"} className=\"w-full min-w-0 border border-[var(--s2c-border)] rounded-lg px-4 py-3 bg-[var(--s2c-surface)] placeholder:text-[var(--s2c-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s2c-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--s2c-surface)]\" />\n          </div>\n        </div>\n        <div className=\"sketch-row\" style={{marginTop: 23}}>\n          <div className=\"sketch-cell\" style={{\"--start\": 1, \"--span\": 24, \"--mobile-width\": \"100%\"}}>\n            <input id={\"component-4\"} type=\"password\" placeholder={\"Password\"} aria-label={\"Password\"} className=\"w-full min-w-0 border border-[var(--s2c-border)] rounded-lg px-4 py-3 bg-[var(--s2c-surface)] placeholder:text-[var(--s2c-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s2c-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--s2c-surface)]\" />\n          </div>\n        </div>\n        <div className=\"sketch-row\" style={{marginTop: 8}}>\n          <div className=\"sketch-cell\" style={{\"--start\": 16, \"--span\": 9, \"--mobile-width\": \"38%\"}}>\n            <a href=\"#\" className=\"text-sm text-[var(--s2c-accent)] underline underline-offset-4 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s2c-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--s2c-surface)]\">{\"Forgot password?\"}</a>\n          </div>\n        </div>\n        <div className=\"sketch-row\" style={{marginTop: 26}}>\n          <div className=\"sketch-cell\" style={{\"--start\": 1, \"--span\": 24, \"--mobile-width\": \"100%\"}}>\n            <button type=\"button\" className=\"w-full border border-[var(--s2c-border)] bg-[var(--s2c-soft)] hover:bg-[var(--s2c-soft-hover)] rounded-lg px-4 py-3 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s2c-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--s2c-surface)]\">{\"Login\"}</button>\n          </div>\n        </div>\n<div style={{\"marginTop\": 34, \"textAlign\": \"center\"}}><div data-layout-kind=\"inline\" className=\"min-w-0 text-sm leading-6 [&>p]:inline [&>label]:inline [&>label>input]:mr-2\"><p className=\"text-sm text-[var(--s2c-muted)]\" style={{textAlign: \"left\"}}>{\"Dont have an account?\"}</p>{\" \"}<a href=\"#\" className=\"text-sm text-[var(--s2c-accent)] underline underline-offset-4 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s2c-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--s2c-surface)]\">{\"Sign up\"}</a></div></div>\n      </section>\n    </main>\n  );\n}\n\nexport default GeneratedPage;",
+  "warnings": [
+    "Some OCR text has low confidence. Check it against the image.",
+    "Some components were inferred or corrected using geometry and OCR. Review the processing details."
+  ],
+  "duration_seconds": 10.6
+}
